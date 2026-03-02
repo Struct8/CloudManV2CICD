@@ -170,6 +170,21 @@ resource "aws_iam_policy" "lambda_function_HCLAWSV2-test_st_AppCloudManV2-test" 
   policy                            = data.aws_iam_policy_document.lambda_function_HCLAWSV2-test_st_AppCloudManV2-test_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test_doc" {
+  statement {
+    sid                             = "AllowWriteLogs"
+    effect                          = "Allow"
+    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources                       = ["${aws_cloudwatch_log_group.HCLCloudFlare-test.arn}:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test" {
+  name                              = "lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test"
+  description                       = "Access Policy for HCLCloudFlare-test"
+  policy                            = data.aws_iam_policy_document.lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test_doc.json
+}
+
 resource "aws_iam_role" "role_lambda_AgentV2-test" {
   name                              = "role_lambda_AgentV2-test"
   assume_role_policy                = jsonencode({
@@ -258,6 +273,28 @@ resource "aws_iam_role" "role_lambda_HCLAWSV2-test" {
   }
 }
 
+resource "aws_iam_role" "role_lambda_HCLCloudFlare-test" {
+  name                              = "role_lambda_HCLCloudFlare-test"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_HCLCloudFlare-test"
+    "State" = "AppCloudManV2-test"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "test"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_function_AgentV2-test_st_AppCloudManV2-test_attach" {
   policy_arn                        = aws_iam_policy.lambda_function_AgentV2-test_st_AppCloudManV2-test.arn
   role                              = aws_iam_role.role_lambda_AgentV2-test.name
@@ -276,6 +313,11 @@ resource "aws_iam_role_policy_attachment" "lambda_function_GithubGateKeeper-test
 resource "aws_iam_role_policy_attachment" "lambda_function_HCLAWSV2-test_st_AppCloudManV2-test_attach" {
   policy_arn                        = aws_iam_policy.lambda_function_HCLAWSV2-test_st_AppCloudManV2-test.arn
   role                              = aws_iam_role.role_lambda_HCLAWSV2-test.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test_attach" {
+  policy_arn                        = aws_iam_policy.lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test.arn
+  role                              = aws_iam_role.role_lambda_HCLCloudFlare-test.name
 }
 
 resource "aws_acm_certificate" "AppCloudManV2-test" {
@@ -317,7 +359,7 @@ resource "aws_route53_record" "Route53_Record_AppCloudManV2-test" {
   type                              = "${each.value.type}"
 }
 
-resource "aws_route53_record" "alias_a_test-test_to_AppCloudManV2-test" {
+resource "aws_route53_record" "alias_a_$STAGEQUALIFIED-test_to_AppCloudManV2-test" {
   name                              = "test.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "A"
@@ -328,7 +370,7 @@ resource "aws_route53_record" "alias_a_test-test_to_AppCloudManV2-test" {
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_test-test_to_AppCloudManV2-test" {
+resource "aws_route53_record" "alias_aaaa_$STAGEQUALIFIED-test_to_AppCloudManV2-test" {
   name                              = "test.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "AAAA"
@@ -391,10 +433,23 @@ locals {
       integ_req_params = null
     },
     {
+      path             = "/HCLCloudFlare-test"
+      uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:HCLCloudFlare-test/invocations"
+      type             = "aws_proxy"
+      methods          = ["post"]
+      method_auth      = {"post" = "APIAppCloudManV2-test_CognitoAuth_CloudManV2"}
+      enable_mock      = true
+      credentials      = null
+      requestTemplates = null
+      integ_method     = "POST"
+      parameters       = null
+      integ_req_params = null
+    },
+    {
       path             = "/GithubGateKeeper-test"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:GithubGateKeeper-test/invocations"
       type             = "aws_proxy"
-      methods          = ["get", "post"]
+      methods          = ["post", "get"]
       method_auth      = {}
       enable_mock      = false
       credentials      = null
@@ -968,6 +1023,41 @@ resource "aws_lambda_function" "HCLAWSV2-test" {
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLAWSV2-test_st_AppCloudManV2-test_attach]
 }
 
+data "archive_file" "archive_CloudManMainV2_HCLCloudFlare-test" {
+  output_path                       = "${path.module}/CloudManMainV2_HCLCloudFlare-test.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/HCLCloudFlare"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "HCLCloudFlare-test" {
+  function_name                     = "HCLCloudFlare-test"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare-test.output_path}"
+  handler                           = "HCLCloudFlare.lambda_handler"
+  memory_size                       = 1024
+  publish                           = false
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_HCLCloudFlare-test.arn
+  runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare-test.output_base64sha256}"
+  timeout                           = 3
+  environment {
+    variables                       = {
+    "CICD_STAGE" = "test"
+    "NAME" = "HCLCloudFlare-test"
+    "REGION" = data.aws_region.current.name
+    "ACCOUNT" = data.aws_caller_identity.current.account_id
+  }
+  }
+  tags                              = {
+    "Name" = "HCLCloudFlare-test"
+    "State" = "AppCloudManV2-test"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "test"
+  }
+  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test_attach]
+}
+
 resource "aws_lambda_permission" "perm_APIAppCloudManV2-test_to_AgentV2-test_openapi" {
   function_name                     = aws_lambda_function.AgentV2-test.function_name
   statement_id                      = "perm_APIAppCloudManV2-test_to_AgentV2-test_openapi"
@@ -998,6 +1088,14 @@ resource "aws_lambda_permission" "perm_APIAppCloudManV2-test_to_HCLAWSV2-test_op
   principal                         = "apigateway.amazonaws.com"
   action                            = "lambda:InvokeFunction"
   source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-test.execution_arn}/*/POST/HCLAWSV2-test"
+}
+
+resource "aws_lambda_permission" "perm_APIAppCloudManV2-test_to_HCLCloudFlare-test_openapi" {
+  function_name                     = aws_lambda_function.HCLCloudFlare-test.function_name
+  statement_id                      = "perm_APIAppCloudManV2-test_to_HCLCloudFlare-test_openapi"
+  principal                         = "apigateway.amazonaws.com"
+  action                            = "lambda:InvokeFunction"
+  source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-test.execution_arn}/*/POST/HCLCloudFlare-test"
 }
 
 resource "aws_lambda_permission" "perm_AgentV2-test_to_GithubGateKeeper-test" {
@@ -1072,6 +1170,19 @@ resource "aws_cloudwatch_log_group" "HCLAWSV2-test" {
   skip_destroy                      = false
   tags                              = {
     "Name" = "HCLAWSV2-test"
+    "State" = "AppCloudManV2-test"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "test"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "HCLCloudFlare-test" {
+  name                              = "/aws/lambda/HCLCloudFlare-test"
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "HCLCloudFlare-test"
     "State" = "AppCloudManV2-test"
     "CloudmanUser" = "SystemUser"
     "Stage" = "test"
