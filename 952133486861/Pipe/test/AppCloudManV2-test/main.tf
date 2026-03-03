@@ -202,7 +202,7 @@ resource "aws_iam_role" "role_lambda_AgentV2-test" {
   tags                              = {
     "Name" = "role_lambda_AgentV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -224,7 +224,7 @@ resource "aws_iam_role" "role_lambda_DBAccessV2-test" {
   tags                              = {
     "Name" = "role_lambda_DBAccessV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -246,7 +246,7 @@ resource "aws_iam_role" "role_lambda_GithubGateKeeper-test" {
   tags                              = {
     "Name" = "role_lambda_GithubGateKeeper-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -268,7 +268,7 @@ resource "aws_iam_role" "role_lambda_HCLAWSV2-test" {
   tags                              = {
     "Name" = "role_lambda_HCLAWSV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -290,7 +290,7 @@ resource "aws_iam_role" "role_lambda_HCLCloudFlare-test" {
   tags                              = {
     "Name" = "role_lambda_HCLCloudFlare-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -330,7 +330,7 @@ resource "aws_acm_certificate" "AppCloudManV2-test" {
   tags                              = {
     "Name" = "AppCloudManV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -359,7 +359,7 @@ resource "aws_route53_record" "Route53_Record_AppCloudManV2-test" {
   type                              = "${each.value.type}"
 }
 
-resource "aws_route53_record" "alias_a_$STAGEQUALIFIED-test_to_AppCloudManV2-test" {
+resource "aws_route53_record" "alias_a_test_to_AppCloudManV2-test" {
   name                              = "test.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "A"
@@ -370,7 +370,7 @@ resource "aws_route53_record" "alias_a_$STAGEQUALIFIED-test_to_AppCloudManV2-tes
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_$STAGEQUALIFIED-test_to_AppCloudManV2-test" {
+resource "aws_route53_record" "alias_aaaa_test_to_AppCloudManV2-test" {
   name                              = "test.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "AAAA"
@@ -580,7 +580,7 @@ resource "aws_api_gateway_rest_api" "APIAppCloudManV2-test" {
   tags                              = {
     "Name" = "APIAppCloudManV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -596,7 +596,7 @@ resource "aws_api_gateway_stage" "st-test" {
   tags                              = {
     "Name" = "st-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -671,7 +671,7 @@ resource "aws_cloudfront_distribution" "AppCloudManV2-test" {
   tags                              = {
     "Name" = "AppCloudManV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
   viewer_certificate {
@@ -703,7 +703,7 @@ resource "aws_s3_bucket" "app-cloudman-v2-logs-test" {
   tags                              = {
     "Name" = "app-cloudman-v2-logs-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -715,7 +715,7 @@ resource "aws_s3_bucket" "app-cloudman-v2-test" {
   tags                              = {
     "Name" = "app-cloudman-v2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -893,7 +893,7 @@ resource "aws_lambda_function" "AgentV2-test" {
   tags                              = {
     "Name" = "AgentV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_AgentV2-test_st_AppCloudManV2-test_attach]
@@ -935,7 +935,7 @@ resource "aws_lambda_function" "DBAccessV2-test" {
   tags                              = {
     "Name" = "DBAccessV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_DBAccessV2-test_st_AppCloudManV2-test_attach]
@@ -977,7 +977,7 @@ resource "aws_lambda_function" "GithubGateKeeper-test" {
   tags                              = {
     "Name" = "GithubGateKeeper-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_GithubGateKeeper-test_st_AppCloudManV2-test_attach]
@@ -1017,7 +1017,7 @@ resource "aws_lambda_function" "HCLAWSV2-test" {
   tags                              = {
     "Name" = "HCLAWSV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLAWSV2-test_st_AppCloudManV2-test_attach]
@@ -1052,7 +1052,7 @@ resource "aws_lambda_function" "HCLCloudFlare-test" {
   tags                              = {
     "Name" = "HCLCloudFlare-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test_attach]
@@ -1119,7 +1119,7 @@ resource "aws_cloudwatch_log_group" "AgentV2-test" {
   tags                              = {
     "Name" = "AgentV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -1132,7 +1132,7 @@ resource "aws_cloudwatch_log_group" "AppCloudManV2-ST-test" {
   tags                              = {
     "Name" = "AppCloudManV2-ST-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -1145,7 +1145,7 @@ resource "aws_cloudwatch_log_group" "DBAccessV2-test" {
   tags                              = {
     "Name" = "DBAccessV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -1158,7 +1158,7 @@ resource "aws_cloudwatch_log_group" "GithubGateKeeper-test" {
   tags                              = {
     "Name" = "GithubGateKeeper-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -1171,7 +1171,7 @@ resource "aws_cloudwatch_log_group" "HCLAWSV2-test" {
   tags                              = {
     "Name" = "HCLAWSV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
@@ -1184,7 +1184,7 @@ resource "aws_cloudwatch_log_group" "HCLCloudFlare-test" {
   tags                              = {
     "Name" = "HCLCloudFlare-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "CloudmanUser" = "CloudMan2"
     "Stage" = "test"
   }
 }
