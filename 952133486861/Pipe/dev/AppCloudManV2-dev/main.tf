@@ -170,6 +170,36 @@ resource "aws_iam_policy" "lambda_function_HCLAWSV2-dev_st_AppCloudManV2-dev" {
   policy                            = data.aws_iam_policy_document.lambda_function_HCLAWSV2-dev_st_AppCloudManV2-dev_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev_doc" {
+  statement {
+    sid                             = "AllowWriteLogs"
+    effect                          = "Allow"
+    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources                       = ["${aws_cloudwatch_log_group.HCLCloudFlare-dev.arn}:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev" {
+  name                              = "lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev"
+  description                       = "Access Policy for HCLCloudFlare-dev"
+  policy                            = data.aws_iam_policy_document.lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev_doc.json
+}
+
+data "aws_iam_policy_document" "lambda_function_HCLGCore-dev_st_AppCloudManV2-dev_doc" {
+  statement {
+    sid                             = "AllowWriteLogs"
+    effect                          = "Allow"
+    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources                       = ["${aws_cloudwatch_log_group.HCLGCore-dev.arn}:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_HCLGCore-dev_st_AppCloudManV2-dev" {
+  name                              = "lambda_function_HCLGCore-dev_st_AppCloudManV2-dev"
+  description                       = "Access Policy for HCLGCore-dev"
+  policy                            = data.aws_iam_policy_document.lambda_function_HCLGCore-dev_st_AppCloudManV2-dev_doc.json
+}
+
 resource "aws_iam_role" "role_lambda_AgentV2-dev" {
   name                              = "role_lambda_AgentV2-dev"
   assume_role_policy                = jsonencode({
@@ -258,6 +288,50 @@ resource "aws_iam_role" "role_lambda_HCLAWSV2-dev" {
   }
 }
 
+resource "aws_iam_role" "role_lambda_HCLCloudFlare-dev" {
+  name                              = "role_lambda_HCLCloudFlare-dev"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_HCLCloudFlare-dev"
+    "State" = "AppCloudManV2-dev"
+    "CloudmanUser" = "CloudMan2"
+    "Stage" = "dev"
+  }
+}
+
+resource "aws_iam_role" "role_lambda_HCLGCore-dev" {
+  name                              = "role_lambda_HCLGCore-dev"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_HCLGCore-dev"
+    "State" = "AppCloudManV2-dev"
+    "CloudmanUser" = "CloudMan2"
+    "Stage" = "dev"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_function_AgentV2-dev_st_AppCloudManV2-dev_attach" {
   policy_arn                        = aws_iam_policy.lambda_function_AgentV2-dev_st_AppCloudManV2-dev.arn
   role                              = aws_iam_role.role_lambda_AgentV2-dev.name
@@ -276,6 +350,16 @@ resource "aws_iam_role_policy_attachment" "lambda_function_GithubGateKeeper-dev_
 resource "aws_iam_role_policy_attachment" "lambda_function_HCLAWSV2-dev_st_AppCloudManV2-dev_attach" {
   policy_arn                        = aws_iam_policy.lambda_function_HCLAWSV2-dev_st_AppCloudManV2-dev.arn
   role                              = aws_iam_role.role_lambda_HCLAWSV2-dev.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev_attach" {
+  policy_arn                        = aws_iam_policy.lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev.arn
+  role                              = aws_iam_role.role_lambda_HCLCloudFlare-dev.name
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_HCLGCore-dev_st_AppCloudManV2-dev_attach" {
+  policy_arn                        = aws_iam_policy.lambda_function_HCLGCore-dev_st_AppCloudManV2-dev.arn
+  role                              = aws_iam_role.role_lambda_HCLGCore-dev.name
 }
 
 resource "aws_acm_certificate" "AppCloudManV2-dev" {
@@ -317,7 +401,7 @@ resource "aws_route53_record" "Route53_Record_AppCloudManV2-dev" {
   type                              = "${each.value.type}"
 }
 
-resource "aws_route53_record" "alias_a_dev-dev_to_AppCloudManV2-dev" {
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2-dev" {
   name                              = "dev.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "A"
@@ -328,7 +412,7 @@ resource "aws_route53_record" "alias_a_dev-dev_to_AppCloudManV2-dev" {
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_dev-dev_to_AppCloudManV2-dev" {
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AppCloudManV2-dev" {
   name                              = "dev.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "AAAA"
@@ -380,6 +464,32 @@ locals {
     {
       path             = "/AgentV2-dev"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:AgentV2-dev/invocations"
+      type             = "aws_proxy"
+      methods          = ["post"]
+      method_auth      = {"post" = "APIAppCloudManV2-dev_CognitoAuth_CloudManV2"}
+      enable_mock      = true
+      credentials      = null
+      requestTemplates = null
+      integ_method     = "POST"
+      parameters       = null
+      integ_req_params = null
+    },
+    {
+      path             = "/HCLCloudFlare-dev"
+      uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:HCLCloudFlare-dev/invocations"
+      type             = "aws_proxy"
+      methods          = ["post"]
+      method_auth      = {"post" = "APIAppCloudManV2-dev_CognitoAuth_CloudManV2"}
+      enable_mock      = true
+      credentials      = null
+      requestTemplates = null
+      integ_method     = "POST"
+      parameters       = null
+      integ_req_params = null
+    },
+    {
+      path             = "/HCLGCore-dev"
+      uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:HCLGCore-dev/invocations"
       type             = "aws_proxy"
       methods          = ["post"]
       method_auth      = {"post" = "APIAppCloudManV2-dev_CognitoAuth_CloudManV2"}
@@ -968,6 +1078,76 @@ resource "aws_lambda_function" "HCLAWSV2-dev" {
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLAWSV2-dev_st_AppCloudManV2-dev_attach]
 }
 
+data "archive_file" "archive_CloudManMainV2_HCLCloudFlare-dev" {
+  output_path                       = "${path.module}/CloudManMainV2_HCLCloudFlare-dev.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/HCLCloudFlare"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "HCLCloudFlare-dev" {
+  function_name                     = "HCLCloudFlare-dev"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare-dev.output_path}"
+  handler                           = "HCLCloudFlare.lambda_handler"
+  memory_size                       = 1024
+  publish                           = false
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_HCLCloudFlare-dev.arn
+  runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare-dev.output_base64sha256}"
+  timeout                           = 3
+  environment {
+    variables                       = {
+    "CICD_STAGE" = "dev"
+    "NAME" = "HCLCloudFlare-dev"
+    "REGION" = data.aws_region.current.name
+    "ACCOUNT" = data.aws_caller_identity.current.account_id
+  }
+  }
+  tags                              = {
+    "Name" = "HCLCloudFlare-dev"
+    "State" = "AppCloudManV2-dev"
+    "CloudmanUser" = "CloudMan2"
+    "Stage" = "dev"
+  }
+  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev_attach]
+}
+
+data "archive_file" "archive_CloudManMainV2_HCLGCore-dev" {
+  output_path                       = "${path.module}/CloudManMainV2_HCLGCore-dev.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/HCLCloudFlare"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "HCLGCore-dev" {
+  function_name                     = "HCLGCore-dev"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudManMainV2_HCLGCore-dev.output_path}"
+  handler                           = "HCLCloudFlare.lambda_handler"
+  memory_size                       = 1024
+  publish                           = false
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_HCLGCore-dev.arn
+  runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_HCLGCore-dev.output_base64sha256}"
+  timeout                           = 3
+  environment {
+    variables                       = {
+    "CICD_STAGE" = "dev"
+    "NAME" = "HCLGCore-dev"
+    "REGION" = data.aws_region.current.name
+    "ACCOUNT" = data.aws_caller_identity.current.account_id
+  }
+  }
+  tags                              = {
+    "Name" = "HCLGCore-dev"
+    "State" = "AppCloudManV2-dev"
+    "CloudmanUser" = "CloudMan2"
+    "Stage" = "dev"
+  }
+  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLGCore-dev_st_AppCloudManV2-dev_attach]
+}
+
 resource "aws_lambda_permission" "perm_APIAppCloudManV2-dev_to_AgentV2-dev_openapi" {
   function_name                     = aws_lambda_function.AgentV2-dev.function_name
   statement_id                      = "perm_APIAppCloudManV2-dev_to_AgentV2-dev_openapi"
@@ -998,6 +1178,22 @@ resource "aws_lambda_permission" "perm_APIAppCloudManV2-dev_to_HCLAWSV2-dev_open
   principal                         = "apigateway.amazonaws.com"
   action                            = "lambda:InvokeFunction"
   source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-dev.execution_arn}/*/POST/HCLAWSV2-dev"
+}
+
+resource "aws_lambda_permission" "perm_APIAppCloudManV2-dev_to_HCLCloudFlare-dev_openapi" {
+  function_name                     = aws_lambda_function.HCLCloudFlare-dev.function_name
+  statement_id                      = "perm_APIAppCloudManV2-dev_to_HCLCloudFlare-dev_openapi"
+  principal                         = "apigateway.amazonaws.com"
+  action                            = "lambda:InvokeFunction"
+  source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-dev.execution_arn}/*/POST/HCLCloudFlare-dev"
+}
+
+resource "aws_lambda_permission" "perm_APIAppCloudManV2-dev_to_HCLGCore-dev_openapi" {
+  function_name                     = aws_lambda_function.HCLGCore-dev.function_name
+  statement_id                      = "perm_APIAppCloudManV2-dev_to_HCLGCore-dev_openapi"
+  principal                         = "apigateway.amazonaws.com"
+  action                            = "lambda:InvokeFunction"
+  source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-dev.execution_arn}/*/POST/HCLGCore-dev"
 }
 
 resource "aws_lambda_permission" "perm_AgentV2-dev_to_GithubGateKeeper-dev" {
@@ -1072,6 +1268,32 @@ resource "aws_cloudwatch_log_group" "HCLAWSV2-dev" {
   skip_destroy                      = false
   tags                              = {
     "Name" = "HCLAWSV2-dev"
+    "State" = "AppCloudManV2-dev"
+    "CloudmanUser" = "CloudMan2"
+    "Stage" = "dev"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "HCLCloudFlare-dev" {
+  name                              = "/aws/lambda/HCLCloudFlare-dev"
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "HCLCloudFlare-dev"
+    "State" = "AppCloudManV2-dev"
+    "CloudmanUser" = "CloudMan2"
+    "Stage" = "dev"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "HCLGCore-dev" {
+  name                              = "/aws/lambda/HCLGCore-dev"
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "HCLGCore-dev"
     "State" = "AppCloudManV2-dev"
     "CloudmanUser" = "CloudMan2"
     "Stage" = "dev"
