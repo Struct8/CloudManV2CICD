@@ -170,6 +170,21 @@ resource "aws_iam_policy" "lambda_function_HCLAWSV2-prod-5_st_AppCloudManV2-prod
   policy                            = data.aws_iam_policy_document.lambda_function_HCLAWSV2-prod-5_st_AppCloudManV2-prod-5_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_HCLCloudFlare-prod-5_st_AppCloudManV2-prod-5_doc" {
+  statement {
+    sid                             = "AllowWriteLogs"
+    effect                          = "Allow"
+    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources                       = ["${aws_cloudwatch_log_group.HCLCloudFlare-prod-5.arn}:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_HCLCloudFlare-prod-5_st_AppCloudManV2-prod-5" {
+  name                              = "lambda_function_HCLCloudFlare-prod-5_st_AppCloudManV2-prod-5"
+  description                       = "Access Policy for HCLCloudFlare-prod-5"
+  policy                            = data.aws_iam_policy_document.lambda_function_HCLCloudFlare-prod-5_st_AppCloudManV2-prod-5_doc.json
+}
+
 resource "aws_iam_role" "role_lambda_AgentV2-prod-5" {
   name                              = "role_lambda_AgentV2-prod-5"
   assume_role_policy                = jsonencode({
@@ -258,6 +273,50 @@ resource "aws_iam_role" "role_lambda_HCLAWSV2-prod-5" {
   }
 }
 
+resource "aws_iam_role" "role_lambda_HCLCloudFlare-prod-5" {
+  name                              = "role_lambda_HCLCloudFlare-prod-5"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_HCLCloudFlare-prod-5"
+    "State" = "AppCloudManV2-prod-5"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "prod"
+  }
+}
+
+resource "aws_iam_role" "role_lambda_HCLCloudFlare1-prod-5" {
+  name                              = "role_lambda_HCLCloudFlare1-prod-5"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_HCLCloudFlare1-prod-5"
+    "State" = "AppCloudManV2-prod-5"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "prod"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_function_AgentV2-prod-5_st_AppCloudManV2-prod-5_attach" {
   policy_arn                        = aws_iam_policy.lambda_function_AgentV2-prod-5_st_AppCloudManV2-prod-5.arn
   role                              = aws_iam_role.role_lambda_AgentV2-prod-5.name
@@ -278,8 +337,13 @@ resource "aws_iam_role_policy_attachment" "lambda_function_HCLAWSV2-prod-5_st_Ap
   role                              = aws_iam_role.role_lambda_HCLAWSV2-prod-5.name
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_function_HCLCloudFlare-prod-5_st_AppCloudManV2-prod-5_attach" {
+  policy_arn                        = aws_iam_policy.lambda_function_HCLCloudFlare-prod-5_st_AppCloudManV2-prod-5.arn
+  role                              = aws_iam_role.role_lambda_HCLCloudFlare-prod-5.name
+}
+
 resource "aws_acm_certificate" "AppCloudManV2-prod-5" {
-  domain_name                       = "prod.v2.cloudman.pro"
+  domain_name                       = "prod-5.v2.cloudman.pro"
   key_algorithm                     = "RSA_2048"
   validation_method                 = "DNS"
   options {
@@ -317,8 +381,8 @@ resource "aws_route53_record" "Route53_Record_AppCloudManV2-prod-5" {
   type                              = "${each.value.type}"
 }
 
-resource "aws_route53_record" "alias_a_prod-prod-5_to_AppCloudManV2-prod-5" {
-  name                              = "prod.v2.cloudman.pro"
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2-prod-5" {
+  name                              = "prod-5.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "A"
   alias {
@@ -328,8 +392,8 @@ resource "aws_route53_record" "alias_a_prod-prod-5_to_AppCloudManV2-prod-5" {
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_prod-prod-5_to_AppCloudManV2-prod-5" {
-  name                              = "prod.v2.cloudman.pro"
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AppCloudManV2-prod-5" {
+  name                              = "prod-5.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "AAAA"
   alias {
@@ -380,6 +444,32 @@ locals {
     {
       path             = "/AgentV2-prod-5"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:AgentV2-prod-5/invocations"
+      type             = "aws_proxy"
+      methods          = ["post"]
+      method_auth      = {"post" = "APIAppCloudManV2-prod-5_CognitoAuth_CloudManV2"}
+      enable_mock      = true
+      credentials      = null
+      requestTemplates = null
+      integ_method     = "POST"
+      parameters       = null
+      integ_req_params = null
+    },
+    {
+      path             = "/HCLCloudFlare-prod-5"
+      uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:HCLCloudFlare-prod-5/invocations"
+      type             = "aws_proxy"
+      methods          = ["post"]
+      method_auth      = {"post" = "APIAppCloudManV2-prod-5_CognitoAuth_CloudManV2"}
+      enable_mock      = true
+      credentials      = null
+      requestTemplates = null
+      integ_method     = "POST"
+      parameters       = null
+      integ_req_params = null
+    },
+    {
+      path             = "/HCLCloudFlare1-prod-5"
+      uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:HCLCloudFlare1-prod-5/invocations"
       type             = "aws_proxy"
       methods          = ["post"]
       method_auth      = {"post" = "APIAppCloudManV2-prod-5_CognitoAuth_CloudManV2"}
@@ -547,7 +637,7 @@ resource "aws_api_gateway_stage" "st-prod-5" {
 }
 
 resource "aws_cloudfront_distribution" "AppCloudManV2-prod-5" {
-  aliases                           = ["prod.v2.cloudman.pro"]
+  aliases                           = ["prod-5.v2.cloudman.pro"]
   default_root_object               = "index.html"
   enabled                           = true
   http_version                      = "http2and3"
@@ -825,11 +915,12 @@ resource "aws_lambda_function" "AgentV2-prod-5" {
   timeout                           = 30
   environment {
     variables                       = {
-    "AWS_LAMBDA_FUNCTION_TARGET_NAME_0" = "GithubGateKeeper-prod-5"
-    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "CloudManV2-prod"
+    "CICD_STAGE" = "prod"
+    "NAME" = "AgentV2-prod-5"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "NAME" = "AgentV2-prod-5"
+    "AWS_LAMBDA_FUNCTION_TARGET_NAME_0" = "GithubGateKeeper-prod-5"
+    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "CloudManV2-prod"
     "AWS_LAMBDA_FUNCTION_TARGET_ARN_0" = aws_lambda_function.GithubGateKeeper-prod-5.arn
     "AWS_DYNAMODB_TABLE_TARGET_ARN_0" = data.aws_dynamodb_table.CloudManV2-prod.arn
   }
@@ -854,7 +945,7 @@ resource "aws_lambda_function" "DBAccessV2-prod-5" {
   architectures                     = ["arm64"]
   filename                          = "${data.archive_file.archive_CloudManMainV2_DBAccessV2-prod-5.output_path}"
   handler                           = "DBAccessV2.lambda_handler"
-  memory_size                       = 1024
+  memory_size                       = 1025
   publish                           = false
   reserved_concurrent_executions    = -1
   role                              = aws_iam_role.role_lambda_DBAccessV2-prod-5.arn
@@ -863,10 +954,11 @@ resource "aws_lambda_function" "DBAccessV2-prod-5" {
   timeout                           = 3
   environment {
     variables                       = {
-    "AWS_S3_BUCKET_TARGET_NAME_0" = "s3-cloudmanv2-files-prod"
+    "CICD_STAGE" = "prod"
+    "NAME" = "DBAccessV2-prod-5"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "NAME" = "DBAccessV2-prod-5"
+    "AWS_S3_BUCKET_TARGET_NAME_0" = "s3-cloudmanv2-files-prod"
     "AWS_S3_BUCKET_TARGET_ARN_0" = data.aws_s3_bucket.s3-cloudmanv2-files-prod.arn
   }
   }
@@ -907,12 +999,13 @@ resource "aws_lambda_function" "GithubGateKeeper-prod-5" {
     variables                       = {
     "CLOUDMAN_CICD_STAGE" = "dev"
     "APP_URL" = "v2.cloudman.pro"
+    "CICD_STAGE" = "prod"
+    "NAME" = "GithubGateKeeper-prod-5"
+    "REGION" = data.aws_region.current.name
+    "ACCOUNT" = data.aws_caller_identity.current.account_id
     "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "CloudManV2-prod"
     "AWS_SSM_PARAMETER_TARGET_NAME_APPKEY" = "GitHubAppKeyProd"
     "AWS_SSM_PARAMETER_TARGET_NAME_SECRET" = "GithubClientAndSecretProd"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "NAME" = "GithubGateKeeper-prod-5"
     "AWS_DYNAMODB_TABLE_TARGET_ARN_0" = data.aws_dynamodb_table.CloudManV2-prod.arn
   }
   }
@@ -945,9 +1038,10 @@ resource "aws_lambda_function" "HCLAWSV2-prod-5" {
   timeout                           = 5
   environment {
     variables                       = {
+    "CICD_STAGE" = "prod"
+    "NAME" = "HCLAWSV2-prod-5"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "NAME" = "HCLAWSV2-prod-5"
   }
   }
   lifecycle {
@@ -962,6 +1056,75 @@ resource "aws_lambda_function" "HCLAWSV2-prod-5" {
     "Stage" = "prod"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLAWSV2-prod-5_st_AppCloudManV2-prod-5_attach]
+}
+
+data "archive_file" "archive_CloudManMainV2_HCLCloudFlare-prod-5" {
+  output_path                       = "${path.module}/CloudManMainV2_HCLCloudFlare-prod-5.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/HCLCloudFlare"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "HCLCloudFlare-prod-5" {
+  function_name                     = "HCLCloudFlare-prod-5"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare-prod-5.output_path}"
+  handler                           = "HCLCloudFlare.lambda_handler"
+  memory_size                       = 1024
+  publish                           = false
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_HCLCloudFlare-prod-5.arn
+  runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare-prod-5.output_base64sha256}"
+  timeout                           = 3
+  environment {
+    variables                       = {
+    "CICD_STAGE" = "prod"
+    "NAME" = "HCLCloudFlare-prod-5"
+    "REGION" = data.aws_region.current.name
+    "ACCOUNT" = data.aws_caller_identity.current.account_id
+  }
+  }
+  tags                              = {
+    "Name" = "HCLCloudFlare-prod-5"
+    "State" = "AppCloudManV2-prod-5"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "prod"
+  }
+  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLCloudFlare-prod-5_st_AppCloudManV2-prod-5_attach]
+}
+
+data "archive_file" "archive_CloudManMainV2_HCLCloudFlare1-prod-5" {
+  output_path                       = "${path.module}/CloudManMainV2_HCLCloudFlare1-prod-5.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/HCLCloudFlare"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "HCLCloudFlare1-prod-5" {
+  function_name                     = "HCLCloudFlare1-prod-5"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare1-prod-5.output_path}"
+  handler                           = "HCLCloudFlare.lambda_handler"
+  memory_size                       = 1024
+  publish                           = false
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_HCLCloudFlare1-prod-5.arn
+  runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_HCLCloudFlare1-prod-5.output_base64sha256}"
+  timeout                           = 3
+  environment {
+    variables                       = {
+    "CICD_STAGE" = "prod"
+    "NAME" = "HCLCloudFlare1-prod-5"
+    "REGION" = data.aws_region.current.name
+    "ACCOUNT" = data.aws_caller_identity.current.account_id
+  }
+  }
+  tags                              = {
+    "Name" = "HCLCloudFlare1-prod-5"
+    "State" = "AppCloudManV2-prod-5"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "prod"
+  }
 }
 
 resource "aws_lambda_permission" "perm_APIAppCloudManV2-prod-5_to_AgentV2-prod-5_openapi" {
@@ -994,6 +1157,22 @@ resource "aws_lambda_permission" "perm_APIAppCloudManV2-prod-5_to_HCLAWSV2-prod-
   principal                         = "apigateway.amazonaws.com"
   action                            = "lambda:InvokeFunction"
   source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-prod-5.execution_arn}/*/POST/HCLAWSV2-prod-5"
+}
+
+resource "aws_lambda_permission" "perm_APIAppCloudManV2-prod-5_to_HCLCloudFlare-prod-5_openapi" {
+  function_name                     = aws_lambda_function.HCLCloudFlare-prod-5.function_name
+  statement_id                      = "perm_APIAppCloudManV2-prod-5_to_HCLCloudFlare-prod-5_openapi"
+  principal                         = "apigateway.amazonaws.com"
+  action                            = "lambda:InvokeFunction"
+  source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-prod-5.execution_arn}/*/POST/HCLCloudFlare-prod-5"
+}
+
+resource "aws_lambda_permission" "perm_APIAppCloudManV2-prod-5_to_HCLCloudFlare1-prod-5_openapi" {
+  function_name                     = aws_lambda_function.HCLCloudFlare1-prod-5.function_name
+  statement_id                      = "perm_APIAppCloudManV2-prod-5_to_HCLCloudFlare1-prod-5_openapi"
+  principal                         = "apigateway.amazonaws.com"
+  action                            = "lambda:InvokeFunction"
+  source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-prod-5.execution_arn}/*/POST/HCLCloudFlare1-prod-5"
 }
 
 resource "aws_lambda_permission" "perm_AgentV2-prod-5_to_GithubGateKeeper-prod-5" {
@@ -1068,6 +1247,31 @@ resource "aws_cloudwatch_log_group" "HCLAWSV2-prod-5" {
   skip_destroy                      = false
   tags                              = {
     "Name" = "HCLAWSV2-prod-5"
+    "State" = "AppCloudManV2-prod-5"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "prod"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "HCLCloudFlare-prod-5" {
+  name                              = "/aws/lambda/HCLCloudFlare-prod-5"
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "HCLCloudFlare-prod-5"
+    "State" = "AppCloudManV2-prod-5"
+    "CloudmanUser" = "SystemUser"
+    "Stage" = "prod"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "LogGroup-prod-5" {
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "LogGroup-prod-5"
     "State" = "AppCloudManV2-prod-5"
     "CloudmanUser" = "SystemUser"
     "Stage" = "prod"
