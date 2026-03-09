@@ -504,7 +504,7 @@ locals {
       path             = "/GithubGateKeeper-dev"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:GithubGateKeeper-dev/invocations"
       type             = "aws_proxy"
-      methods          = ["post", "get"]
+      methods          = ["get", "post"]
       method_auth      = {}
       enable_mock      = false
       credentials      = null
@@ -936,6 +936,7 @@ resource "aws_lambda_function" "AgentV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
+    "CICD_VERSION" = "0"
     "NAME" = "AgentV2-dev"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -975,6 +976,7 @@ resource "aws_lambda_function" "DBAccessV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
+    "CICD_VERSION" = "0"
     "NAME" = "DBAccessV2-dev"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -1020,6 +1022,7 @@ resource "aws_lambda_function" "GithubGateKeeper-dev" {
     "CLOUDMAN_CICD_STAGE" = "dev"
     "APP_URL" = "v2.cloudman.pro"
     "CICD_STAGE" = "dev"
+    "CICD_VERSION" = "0"
     "NAME" = "GithubGateKeeper-dev"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -1059,6 +1062,7 @@ resource "aws_lambda_function" "HCLAWSV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
+    "CICD_VERSION" = "0"
     "NAME" = "HCLAWSV2-dev"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -1099,6 +1103,7 @@ resource "aws_lambda_function" "HCLCloudFlare-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
+    "CICD_VERSION" = "0"
     "NAME" = "HCLCloudFlare-dev"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -1134,6 +1139,7 @@ resource "aws_lambda_function" "HCLGCore-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
+    "CICD_VERSION" = "0"
     "NAME" = "HCLGCore-dev"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
