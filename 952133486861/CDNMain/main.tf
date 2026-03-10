@@ -236,7 +236,7 @@ locals {
       path             = "/GetStageV2"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:GetStageV2/invocations"
       type             = "aws_proxy"
-      methods          = ["post", "options"]
+      methods          = ["options", "post"]
       method_auth      = {"options" = "APIAuthCloudManV2_CognitoAuth_CloudManV2", "post" = "APIAuthCloudManV2_CognitoAuth_CloudManV2"}
       enable_mock      = false
       credentials      = null
@@ -437,6 +437,11 @@ resource "aws_cloudfront_distribution" "AuthCloudManV2" {
         forward                     = "whitelist"
         whitelisted_names           = ["stage"]
       }
+    }
+    lambda_function_association {
+      event_type                    = "origin-request"
+      include_body                  = false
+      lambda_arn                    = aws_lambda_function.RedirectorV2.qualified_arn
     }
   }
   ordered_cache_behavior {
