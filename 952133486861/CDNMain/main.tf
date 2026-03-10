@@ -865,6 +865,11 @@ resource "aws_ssm_parameter" "PipelineCloudMan" {
   tier                              = "Standard"
   type                              = "String"
   value                             = "{\"prod\":{\"blue\":\"5\",\"green\":\"6\"}}"
+  lifecycle {
+    create_before_destroy           = false
+    ignore_changes                  = [value]
+    prevent_destroy                 = false
+  }
   tags                              = {
     "Name" = "PipelineCloudMan"
     "State" = "CDNMain"
