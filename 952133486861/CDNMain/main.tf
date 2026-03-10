@@ -124,7 +124,7 @@ resource "aws_iam_role" "role_lambda_CallBackRedirector" {
       "Action": "sts:AssumeRole",
       "Effect": "Allow",
       "Principal": {
-        "Service": "lambda.amazonaws.com"
+        "Service": ["lambda.amazonaws.com", "edgelambda.amazonaws.com"]
       }
     }
   ]
@@ -535,7 +535,7 @@ resource "aws_cloudfront_origin_access_control" "oac_s3-cloudmanv2-auth-bucket" 
 
 resource "aws_s3_bucket" "auth-cloudman-v2-logs" {
   bucket                            = "auth-cloudman-v2-logs"
-  force_destroy                     = false
+  force_destroy                     = true
   object_lock_enabled               = false
   tags                              = {
     "Name" = "auth-cloudman-v2-logs"
