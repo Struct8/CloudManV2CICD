@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "lambda_function_CallBackRedirector_st_CDNMain_do
     sid                             = "AllowWriteLogs"
     effect                          = "Allow"
     actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources                       = ["*"]
+    resources                       = ["${aws_cloudwatch_log_group.CallBackRedirector.arn}:*"]
   }
 }
 
@@ -105,7 +105,7 @@ data "aws_iam_policy_document" "lambda_function_RedirectorV2_st_CDNMain_doc" {
     sid                             = "AllowWriteLogs"
     effect                          = "Allow"
     actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources                       = ["*"]
+    resources                       = ["${aws_cloudwatch_log_group.RedirectorV2.arn}:*"]
   }
 }
 
@@ -236,7 +236,7 @@ locals {
       path             = "/GetStageV2"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:GetStageV2/invocations"
       type             = "aws_proxy"
-      methods          = ["options", "post"]
+      methods          = ["post", "options"]
       method_auth      = {"options" = "APIAuthCloudManV2_CognitoAuth_CloudManV2", "post" = "APIAuthCloudManV2_CognitoAuth_CloudManV2"}
       enable_mock      = false
       credentials      = null
@@ -411,6 +411,11 @@ resource "aws_cloudfront_distribution" "AuthCloudManV2" {
         whitelisted_names           = ["stage"]
       }
     }
+    lambda_function_association {
+      event_type                    = "origin-request"
+      include_body                  = false
+      lambda_arn                    = aws_lambda_function.RedirectorV2.qualified_arn
+    }
   }
   logging_config {
     bucket                          = aws_s3_bucket.auth-cloudman-v2-logs.bucket_domain_name
@@ -432,11 +437,6 @@ resource "aws_cloudfront_distribution" "AuthCloudManV2" {
         forward                     = "whitelist"
         whitelisted_names           = ["stage"]
       }
-    }
-    lambda_function_association {
-      event_type                    = "viewer-request"
-      include_body                  = false
-      lambda_arn                    = aws_lambda_function.RedirectorV2.qualified_arn
     }
   }
   ordered_cache_behavior {
@@ -743,6 +743,11 @@ resource "aws_lambda_function" "GetStageV2" {
     "AWS_SSM_PARAMETER_TARGET_ARN_0" = aws_ssm_parameter.PipelineCloudMan.arn
   }
   }
+  lifecycle {
+    create_before_destroy           = false
+    ignore_changes                  = [filename]
+    prevent_destroy                 = false
+  }
   tags                              = {
     "Name" = "GetStageV2"
     "State" = "CDNMain"
@@ -769,6 +774,11 @@ resource "aws_lambda_function" "RedirectorV2" {
   runtime                           = "python3.12"
   source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_RedirectorV2.output_base64sha256}"
   timeout                           = 1
+  lifecycle {
+    create_before_destroy           = false
+    ignore_changes                  = [filename]
+    prevent_destroy                 = false
+  }
   tags                              = {
     "Name" = "RedirectorV2"
     "State" = "CDNMain"
