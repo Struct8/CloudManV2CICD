@@ -58,6 +58,21 @@ data "aws_cognito_user_pool" "CloudManV2" {
 
 ### CATEGORY: IAM ###
 
+data "aws_iam_policy_document" "lambda_function_CallBackRedirector_st_CDNMain_doc" {
+  statement {
+    sid                             = "AllowWriteLogs"
+    effect                          = "Allow"
+    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources                       = ["${aws_cloudwatch_log_group.CallBackRedirector.arn}:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_CallBackRedirector_st_CDNMain" {
+  name                              = "lambda_function_CallBackRedirector_st_CDNMain"
+  description                       = "Access Policy for CallBackRedirector"
+  policy                            = data.aws_iam_policy_document.lambda_function_CallBackRedirector_st_CDNMain_doc.json
+}
+
 data "aws_iam_policy_document" "lambda_function_GetStageV2_st_CDNMain_doc" {
   statement {
     sid                             = "AllowWriteLogs"
@@ -98,6 +113,27 @@ resource "aws_iam_policy" "lambda_function_RedirectorV2_st_CDNMain" {
   name                              = "lambda_function_RedirectorV2_st_CDNMain"
   description                       = "Access Policy for RedirectorV2"
   policy                            = data.aws_iam_policy_document.lambda_function_RedirectorV2_st_CDNMain_doc.json
+}
+
+resource "aws_iam_role" "role_lambda_CallBackRedirector" {
+  name                              = "role_lambda_CallBackRedirector"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_CallBackRedirector"
+    "State" = "CDNMain"
+    "CloudmanUser" = "CloudMan2"
+  }
 }
 
 resource "aws_iam_role" "role_lambda_GetStageV2" {
@@ -142,6 +178,11 @@ resource "aws_iam_role" "role_lambda_RedirectorV2" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_function_CallBackRedirector_st_CDNMain_attach" {
+  policy_arn                        = aws_iam_policy.lambda_function_CallBackRedirector_st_CDNMain.arn
+  role                              = aws_iam_role.role_lambda_CallBackRedirector.name
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_function_GetStageV2_st_CDNMain_attach" {
   policy_arn                        = aws_iam_policy.lambda_function_GetStageV2_st_CDNMain.arn
   role                              = aws_iam_role.role_lambda_GetStageV2.name
@@ -157,7 +198,7 @@ resource "aws_iam_role_policy_attachment" "lambda_function_RedirectorV2_st_CDNMa
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_route53_record" "alias_a_v2_to_AuthCloudManV2" {
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AuthCloudManV2" {
   name                              = "v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "A"
@@ -168,7 +209,7 @@ resource "aws_route53_record" "alias_a_v2_to_AuthCloudManV2" {
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_v2_to_AuthCloudManV2" {
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AuthCloudManV2" {
   name                              = "v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "AAAA"
@@ -195,9 +236,9 @@ locals {
       path             = "/GetStageV2"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:GetStageV2/invocations"
       type             = "aws_proxy"
-      methods          = ["post"]
-      method_auth      = {"post" = "APIAuthCloudManV2_CognitoAuth_CloudManV2"}
-      enable_mock      = true
+      methods          = ["post", "options"]
+      method_auth      = {"options" = "APIAuthCloudManV2_CognitoAuth_CloudManV2", "post" = "APIAuthCloudManV2_CognitoAuth_CloudManV2"}
+      enable_mock      = false
       credentials      = null
       requestTemplates = null
       integ_method     = "POST"
@@ -398,9 +439,32 @@ resource "aws_cloudfront_distribution" "AuthCloudManV2" {
       }
     }
     lambda_function_association {
-      event_type                    = "origin-request"
+      event_type                    = "viewer-request"
       include_body                  = false
       lambda_arn                    = aws_lambda_function.RedirectorV2.qualified_arn
+    }
+  }
+  ordered_cache_behavior {
+    target_origin_id                = "origin_APIAuthCloudManV2"
+    allowed_methods                 = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods                  = ["GET", "HEAD", "OPTIONS"]
+    compress                        = true
+    default_ttl                     = 0
+    max_ttl                         = 0
+    min_ttl                         = 0
+    path_pattern                    = "/callback"
+    viewer_protocol_policy          = "redirect-to-https"
+    forwarded_values {
+      headers                       = ["*"]
+      query_string                  = true
+      cookies {
+        forward                     = "all"
+      }
+    }
+    lambda_function_association {
+      event_type                    = "origin-request"
+      include_body                  = false
+      lambda_arn                    = aws_lambda_function.CallBackRedirector.qualified_arn
     }
   }
   ordered_cache_behavior {
@@ -628,6 +692,39 @@ resource "aws_s3_bucket_versioning" "s3-cloudmanv2-auth-bucket_versioning" {
 
 ### CATEGORY: COMPUTE ###
 
+data "archive_file" "archive_CloudManMainV2_CallBackRedirector" {
+  output_path                       = "${path.module}/CloudManMainV2_CallBackRedirector.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/CallBackRedirector"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "CallBackRedirector" {
+  function_name                     = "CallBackRedirector"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudManMainV2_CallBackRedirector.output_path}"
+  handler                           = "CallBackRedirector.lambda_handler"
+  memory_size                       = 1024
+  publish                           = true
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_CallBackRedirector.arn
+  runtime                           = "python3.12"
+  source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_CallBackRedirector.output_base64sha256}"
+  timeout                           = 1
+  environment {
+    variables                       = {
+    "NAME" = "CallBackRedirector"
+    "REGION" = data.aws_region.current.name
+    "ACCOUNT" = data.aws_caller_identity.current.account_id
+  }
+  }
+  tags                              = {
+    "Name" = "CallBackRedirector"
+    "State" = "CDNMain"
+    "CloudmanUser" = "CloudMan2"
+  }
+  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_CallBackRedirector_st_CDNMain_attach]
+}
+
 data "archive_file" "archive_CloudManMainV2_GetStageV2" {
   output_path                       = "${path.module}/CloudManMainV2_GetStageV2.zip"
   source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/GetStageV2"
@@ -700,7 +797,7 @@ resource "aws_lambda_permission" "perm_APIAuthCloudManV2_to_GetStageV2_openapi" 
   statement_id                      = "perm_APIAuthCloudManV2_to_GetStageV2_openapi"
   principal                         = "apigateway.amazonaws.com"
   action                            = "lambda:InvokeFunction"
-  source_arn                        = "${aws_api_gateway_rest_api.APIAuthCloudManV2.execution_arn}/*/POST/GetStageV2"
+  source_arn                        = "${aws_api_gateway_rest_api.APIAuthCloudManV2.execution_arn}/*/*/GetStageV2"
 }
 
 
@@ -715,6 +812,18 @@ resource "aws_cloudwatch_log_group" "APIAuthCloudManV2" {
   skip_destroy                      = false
   tags                              = {
     "Name" = "APIAuthCloudManV2"
+    "State" = "CDNMain"
+    "CloudmanUser" = "CloudMan2"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "CallBackRedirector" {
+  name                              = "/aws/lambda/CallBackRedirector"
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "CallBackRedirector"
     "State" = "CDNMain"
     "CloudmanUser" = "CloudMan2"
   }
