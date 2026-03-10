@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "lambda_function_CallBackRedirector_st_CDNMain_do
     sid                             = "AllowWriteLogs"
     effect                          = "Allow"
     actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources                       = ["${aws_cloudwatch_log_group.CallBackRedirector.arn}:*"]
+    resources                       = ["*"]
   }
 }
 
@@ -105,7 +105,7 @@ data "aws_iam_policy_document" "lambda_function_RedirectorV2_st_CDNMain_doc" {
     sid                             = "AllowWriteLogs"
     effect                          = "Allow"
     actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources                       = ["${aws_cloudwatch_log_group.RedirectorV2.arn}:*"]
+    resources                       = ["*"]
   }
 }
 
