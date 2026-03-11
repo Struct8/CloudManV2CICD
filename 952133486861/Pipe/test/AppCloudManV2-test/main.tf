@@ -841,7 +841,7 @@ resource "aws_lambda_function" "AgentV2-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "7"
     "NAME" = "AgentV2-test"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -881,7 +881,7 @@ resource "aws_lambda_function" "DBAccessV2-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "7"
     "NAME" = "DBAccessV2-test"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -927,7 +927,7 @@ resource "aws_lambda_function" "GithubGateKeeper-test" {
     "CLOUDMAN_CICD_STAGE" = "dev"
     "APP_URL" = "v2.cloudman.pro"
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "7"
     "NAME" = "GithubGateKeeper-test"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -972,7 +972,7 @@ resource "aws_lambda_function" "HCLAWSV2-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "7"
     "NAME" = "HCLAWSV2-test"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -1013,7 +1013,7 @@ resource "aws_lambda_function" "HCLCloudFlare-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "7"
     "NAME" = "HCLCloudFlare-test"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
@@ -1049,7 +1049,7 @@ resource "aws_lambda_function" "HCLGCore-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "7"
     "NAME" = "HCLGCore-test"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
