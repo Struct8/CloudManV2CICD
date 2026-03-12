@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "lambda_function_Functionx-prod-7_st_State-prod-7
   statement {
     sid                             = "AllowDynamoDBCRUD"
     effect                          = "Allow"
-    actions                         = ["dynamodb:DeleteItem", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
+    actions                         = ["dynamodb:DeleteItem", "dynamodb:DescribeStream", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query", "dynamodb:UpdateItem"]
     resources                       = ["${data.aws_dynamodb_table.Tablex-prod.arn}", "${data.aws_dynamodb_table.Tablex-prod.arn}/*"]
   }
 }
@@ -106,10 +106,12 @@ resource "aws_lambda_function" "Functionx-prod-7" {
   timeout                           = 2
   environment {
     variables                       = {
-    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "Tablex-prod"
+    "CICD_STAGE" = "prod"
+    "CICD_VERSION" = "7"
+    "NAME" = "Functionx-prod-7"
     "REGION" = data.aws_region.current.name
     "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "NAME" = "Functionx-prod-7"
+    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "Tablex-prod"
     "AWS_DYNAMODB_TABLE_TARGET_ARN_0" = data.aws_dynamodb_table.Tablex-prod.arn
   }
   }
