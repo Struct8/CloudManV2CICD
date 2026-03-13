@@ -80,8 +80,8 @@ resource "aws_efs_file_system" "EFS2" {
   encrypted                         = true
   throughput_mode                   = "elastic"
   lifecycle_policy {
-    transition_to_archive           = "After_200_Days"
-    transition_to_ia                = "AFTER_90_DAYS"
+    transition_to_archive           = "AFTER_365_DAYS"
+    transition_to_ia                = "AFTER_365_DAYS"
     transition_to_primary_storage_class = "AFTER_1_ACCESS"
   }
   protection {
