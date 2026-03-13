@@ -79,14 +79,6 @@ resource "aws_security_group" "efs_file_system_EFS2_group" {
 resource "aws_efs_file_system" "EFS2" {
   encrypted                         = true
   throughput_mode                   = "elastic"
-  lifecycle_policy {
-    transition_to_archive           = "AFTER_365_DAYS"
-    transition_to_ia                = "AFTER_365_DAYS"
-    transition_to_primary_storage_class = "AFTER_1_ACCESS"
-  }
-  protection {
-    replication_overwrite           = "ENABLED"
-  }
   tags                              = {
     "Name" = "EFS2"
     "State" = "State3"
