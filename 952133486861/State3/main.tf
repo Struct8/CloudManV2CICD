@@ -81,7 +81,12 @@ resource "aws_efs_file_system" "EFS2" {
   throughput_mode                   = "elastic"
   lifecycle_policy {
     transition_to_archive           = "AFTER_180_DAYS"
+  }
+  lifecycle_policy {
     transition_to_ia                = "AFTER_30_DAYS"
+  }
+  lifecycle_policy {
+    transition_to_ia                = "AFTER_1_DAY"
   }
   tags                              = {
     "Name" = "EFS2"
