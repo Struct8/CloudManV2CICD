@@ -2,10 +2,6 @@ terraform {
   required_version = ">= 1.0.0"
 
   required_providers {
-    archive = {
-      source  = "hashicorp/archive"
-      version = "~> 2.4.2"
-    }
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
@@ -28,24 +24,48 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-### CATEGORY: IAM ###
+### CATEGORY: NETWORK ###
 
-resource "aws_iam_role" "role_lambda_Function" {
-  name                              = "role_lambda_Function"
-  assume_role_policy                = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      }
-    }
-  ]
-})
+resource "aws_vpc" "VPC" {
+  cidr_block                        = "10.0.0.0/16"
+  instance_tenancy                  = "default"
   tags                              = {
-    "Name" = "role_lambda_Function"
+    "Name" = "VPC"
+    "State" = "State3"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+resource "aws_subnet" "Subnet" {
+  vpc_id                            = aws_vpc.VPC.id
+  availability_zone                 = "us-east-1b"
+  cidr_block                        = "10.0.0.0/24"
+  map_public_ip_on_launch           = false
+  tags                              = {
+    "Name" = "Subnet"
+    "State" = "State3"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+resource "aws_subnet" "Subnet1" {
+  vpc_id                            = aws_vpc.VPC.id
+  availability_zone                 = "us-east-1a"
+  cidr_block                        = "10.0.1.0/24"
+  map_public_ip_on_launch           = false
+  tags                              = {
+    "Name" = "Subnet1"
+    "State" = "State3"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+resource "aws_security_group" "efs_file_system_EFS2_group" {
+  name                              = "efs_file_system_EFS2_group"
+  vpc_id                            = aws_vpc.VPC.id
+  revoke_rules_on_delete            = false
+  tags                              = {
+    "Name" = "efs_file_system_EFS2_group"
     "State" = "State3"
     "CloudmanUser" = "Ricardo"
   }
@@ -54,38 +74,36 @@ resource "aws_iam_role" "role_lambda_Function" {
 
 
 
-### CATEGORY: COMPUTE ###
+### CATEGORY: STORAGE ###
 
-data "archive_file" "archive_CloudMan_Function" {
-  output_path                       = "${path.module}/CloudMan_Function.zip"
-  source_dir                        = "${path.module}/.external_modules/CloudMan/LambdaFiles/LambdaHub2"
-  type                              = "zip"
-}
-
-resource "aws_lambda_function" "Function" {
-  function_name                     = "Function"
-  architectures                     = ["arm64"]
-  filename                          = "${data.archive_file.archive_CloudMan_Function.output_path}"
-  handler                           = "LambdaHub2.lambda_handler"
-  memory_size                       = 3008
-  publish                           = false
-  reserved_concurrent_executions    = -1
-  role                              = aws_iam_role.role_lambda_Function.arn
-  runtime                           = "python3.13"
-  source_code_hash                  = "${data.archive_file.archive_CloudMan_Function.output_base64sha256}"
-  timeout                           = 30
-  environment {
-    variables                       = {
-    "NAME" = "Function"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
+resource "aws_efs_file_system" "EFS2" {
+  encrypted                         = true
+  throughput_mode                   = "elastic"
+  lifecycle_policy {
+    transition_to_archive           = "After_200_Days"
+    transition_to_ia                = "AFTER_90_DAYS"
+    transition_to_primary_storage_class = "AFTER_1_ACCESS"
   }
+  protection {
+    replication_overwrite           = "ENABLED"
   }
   tags                              = {
-    "Name" = "Function"
+    "Name" = "EFS2"
     "State" = "State3"
     "CloudmanUser" = "Ricardo"
   }
+}
+
+resource "aws_efs_mount_target" "mt_EFS2_Subnet" {
+  file_system_id                    = aws_efs_file_system.EFS2.id
+  subnet_id                         = aws_subnet.Subnet.id
+  security_groups                   = [aws_security_group.efs_file_system_EFS2_group.id]
+}
+
+resource "aws_efs_mount_target" "mt_EFS2_Subnet1" {
+  file_system_id                    = aws_efs_file_system.EFS2.id
+  subnet_id                         = aws_subnet.Subnet1.id
+  security_groups                   = [aws_security_group.efs_file_system_EFS2_group.id]
 }
 
 
