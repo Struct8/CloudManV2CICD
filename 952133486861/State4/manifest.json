@@ -1,30 +1,12 @@
 {
-  "external_repositories": [
-    {
-      "repo_name": "CloudManMain",
-      "org": "CloudManPro",
-      "branch": "main",
-      "target_dir": ".external_modules/CloudManMain",
-      "folders": [
-        "LambdaFiles/Agent"
-      ]
-    },
-    {
-      "repo_name": "CloudMan",
-      "org": "CloudManPro",
-      "branch": "main",
-      "target_dir": ".external_modules/CloudMan",
-      "folders": [
-        "LambdaFiles/LambdaHub2"
-      ]
-    }
-  ],
-  "action": "destroy",
-  "trigger_id": "1772931784974",
+  "external_repositories": [],
+  "action": "apply",
+  "trigger_id": "1773498990079",
   "backend_global_config": {
     "provider": "aws",
     "role_arn": "arn:aws:iam::952133486861:role/CloudMan-Gitops-CloudManPro-CloudManV2CICD",
-    "region": "us-east-1"
+    "region": "us-east-1",
+    "bucket": "cloudan-v2-cicd"
   },
   "pipeline_stages": [
     {
