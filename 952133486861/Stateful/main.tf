@@ -566,7 +566,7 @@ resource "aws_db_instance" "Database1" {
 
 resource "aws_db_subnet_group" "subnet_group_Database1" {
   name                              = "database1-subnet-group"
-  subnet_ids                        = [aws_subnet.DB_a.id, aws_subnet.DB_b.id]
+  subnet_ids                        = [aws_subnet.DB_b.id, aws_subnet.DB_a.id]
   tags                              = {
     "Name" = "subnet_group_Database1"
     "State" = "Stateful"
@@ -676,6 +676,13 @@ EOFUData
 )
   user_data_replace_on_change       = false
   vpc_security_group_ids            = [aws_security_group.instance_Instance_group.id]
+  instance_market_options {
+    market_type                     = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+      spot_instance_type            = "one-time"
+    }
+  }
   tags                              = {
     "Name" = "Instance"
     "State" = "Stateful"
