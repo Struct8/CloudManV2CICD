@@ -566,7 +566,7 @@ resource "aws_db_instance" "Database1" {
 
 resource "aws_db_subnet_group" "subnet_group_Database1" {
   name                              = "database1-subnet-group"
-  subnet_ids                        = [aws_subnet.DB_b.id, aws_subnet.DB_a.id]
+  subnet_ids                        = [aws_subnet.DB_a.id, aws_subnet.DB_b.id]
   tags                              = {
     "Name" = "subnet_group_Database1"
     "State" = "Stateful"
@@ -654,6 +654,9 @@ resource "aws_instance" "Instance" {
 cat << 'EOFENV' > /etc/struct8_env
 AWS_S3_SCRIPT_KEY="WordPressProfessional.sh"
 WPDOMAIN="wp.cloudman.pro"
+ENABLE_PROXYSQL="true"
+WP_VERSION="6.7"
+PHP_VERSION="8.3"
 NAME="Instance"
 REGION="${data.aws_region.current.name}"
 ACCOUNT="${data.aws_caller_identity.current.account_id}"
