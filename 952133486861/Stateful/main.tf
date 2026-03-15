@@ -307,6 +307,15 @@ resource "aws_security_group_rule" "rule_instance_Instance_group_egress_all_prot
   type                              = "egress"
 }
 
+resource "aws_security_group_rule" "rule_instance_Instance_group_ingress_tcp_443_443" {
+  security_group_id                 = aws_security_group.instance_Instance_group.id
+  cidr_blocks                       = ["0.0.0.0/0"]
+  from_port                         = 443
+  protocol                          = "tcp"
+  to_port                           = 443
+  type                              = "ingress"
+}
+
 resource "aws_security_group_rule" "rule_instance_Instance_group_ingress_tcp_80_80" {
   security_group_id                 = aws_security_group.instance_Instance_group.id
   cidr_blocks                       = ["0.0.0.0/0"]
@@ -338,7 +347,6 @@ resource "aws_security_group_rule" "rule_instance_Instance_group_to_efs_file_sys
 
 resource "aws_cloudfront_distribution" "CDN1" {
   aliases                           = ["wp.cloudman.pro"]
-  default_root_object               = "index.html"
   enabled                           = true
   http_version                      = "http2and3"
   is_ipv6_enabled                   = true
