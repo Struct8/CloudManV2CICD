@@ -362,7 +362,7 @@ resource "aws_cloudfront_distribution" "CDN1" {
     min_ttl                         = 0
     viewer_protocol_policy          = "redirect-to-https"
     forwarded_values {
-      headers                       = ["Host", "Origin", "X-Forwarded-Proto", "X-Forwarded-For", "X-Forwarded-Host"]
+      headers                       = ["Host", "Origin", "X-Forwarded-Proto", "X-Forwarded-For", "X-Forwarded-Host", "CloudFront-Forwarded-Proto"]
       query_string                  = true
       cookies {
         forward                     = "all"
@@ -574,7 +574,7 @@ resource "aws_db_instance" "Database1" {
 
 resource "aws_db_subnet_group" "subnet_group_Database1" {
   name                              = "database1-subnet-group"
-  subnet_ids                        = [aws_subnet.DB_b.id, aws_subnet.DB_a.id]
+  subnet_ids                        = [aws_subnet.DB_a.id, aws_subnet.DB_b.id]
   tags                              = {
     "Name" = "subnet_group_Database1"
     "State" = "Stateful"
