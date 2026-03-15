@@ -54,14 +54,17 @@ data "aws_db_instance" "Database1" {
   db_instance_identifier            = "Database1"
 }
 
+data "aws_efs_access_points" "AP" {
+  file_system_id = data.aws_efs_file_system.EFS.id
+}
+
 data "aws_efs_access_point" "AP" {
-  name                              = "AP"
+  access_point_id                   = tolist(data.aws_efs_access_points.AP.ids)[0]
 }
 
 data "aws_efs_file_system" "EFS" {
-  filter {
-    name                            = "tag:Name"
-    values                          = ["EFS"]
+  tags                              = {
+    "Name" = "EFS"
   }
 }
 
