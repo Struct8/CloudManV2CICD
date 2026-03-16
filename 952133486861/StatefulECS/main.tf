@@ -539,6 +539,7 @@ resource "aws_security_group_rule" "rule_lb_alb_ALB_group_egress_all_protocols" 
 
 resource "aws_security_group_rule" "rule_lb_alb_ALB_group_ingress_tcp_443" {
   security_group_id                 = aws_security_group.lb_alb_ALB_group.id
+  cidr_blocks                       = ["0.0.0.0/0"]
   from_port                         = 443
   protocol                          = "tcp"
   to_port                           = 443
@@ -794,7 +795,7 @@ resource "aws_db_instance" "Database4" {
 
 resource "aws_db_subnet_group" "subnet_group_Database4" {
   name                              = "database4-subnet-group"
-  subnet_ids                        = [aws_subnet.DB_b1.id, aws_subnet.DB_a1.id]
+  subnet_ids                        = [aws_subnet.DB_a1.id, aws_subnet.DB_b1.id]
   tags                              = {
     "Name" = "subnet_group_Database4"
     "State" = "StatefulECS"
@@ -928,7 +929,7 @@ resource "aws_ecs_service" "WordPress_service" {
   network_configuration {
     assign_public_ip                = false
     security_groups                 = [aws_security_group.SG_ECS_WP.id]
-    subnets                         = [aws_subnet.WP-a.id, aws_subnet.WP-b.id]
+    subnets                         = [aws_subnet.WP-b.id, aws_subnet.WP-a.id]
   }
   tags                              = {
     "Name" = "WordPress_service"
@@ -996,8 +997,7 @@ locals {
         export WORDPRESS_CONFIG_EXTRA='if (isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && $_SERVER["HTTP_X_FORWARDED_PROTO"] === "https") { $_SERVER["HTTPS"] = "on"; } else if (isset($_SERVER["HTTP_CLOUDFRONT_FORWARDED_PROTO"]) && $_SERVER["HTTP_CLOUDFRONT_FORWARDED_PROTO"] === "https") { $_SERVER["HTTPS"] = "on"; }'
         
         exec docker-entrypoint.sh apache2-foreground
-      EOT
-]
+      EOT]
     "privileged" = false
     "readonlyRootFilesystem" = false
     "logConfiguration" = {
