@@ -570,6 +570,7 @@ resource "aws_lb" "ALB" {
 }
 
 resource "aws_lb_listener" "Listener" {
+  certificate_arn                   = aws_acm_certificate.CertificateALB.arn
   load_balancer_arn                 = aws_lb.ALB.arn
   port                              = 443
   protocol                          = "HTTPS"
@@ -997,8 +998,7 @@ locals {
         export WORDPRESS_CONFIG_EXTRA='if (isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && $_SERVER["HTTP_X_FORWARDED_PROTO"] === "https") { $_SERVER["HTTPS"] = "on"; } else if (isset($_SERVER["HTTP_CLOUDFRONT_FORWARDED_PROTO"]) && $_SERVER["HTTP_CLOUDFRONT_FORWARDED_PROTO"] === "https") { $_SERVER["HTTPS"] = "on"; }'
         
         exec docker-entrypoint.sh apache2-foreground
-      EOT
-                    ]
+      EOT]
     "privileged" = false
     "readonlyRootFilesystem" = false
     "logConfiguration" = {
