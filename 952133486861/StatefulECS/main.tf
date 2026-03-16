@@ -570,7 +570,7 @@ resource "aws_lb" "ALB" {
 }
 
 resource "aws_lb_listener" "Listener" {
-  certificate_arn                   = aws_acm_certificate.CertificateWP.arn
+  certificate_arn                   = data.aws_acm_certificate.CertificateWP.arn
   load_balancer_arn                 = aws_lb.ALB.arn
   port                              = 443
   protocol                          = "HTTPS"
