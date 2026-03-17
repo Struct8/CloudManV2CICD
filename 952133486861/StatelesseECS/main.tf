@@ -795,7 +795,7 @@ locals {
   },
       {
     "name" = "AWS_DB_INSTANCE_USER_NAME_DB"
-    "value" = "${data.aws_db_instance.database4.username}"
+    "value" = "${data.aws_db_instance.database4.master_username}"
   },
       {
     "name" = "AWS_EFS_FILE_SYSTEM_ID_0"
