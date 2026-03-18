@@ -7,6 +7,13 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket         = "cloudan-v2-cicd"
+    key            = "952133486861/State6/main.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+  }
 }
 
 # --- Main Cloud Provider ---
@@ -686,7 +693,7 @@ AWS_S3_BUCKET_NAME_SCRIPT="wp-script-cloudman2"
 AWS_EFS_ACCESS_POINT_ID_0="${aws_efs_access_point.AP5.id}"
 AWS_DB_INSTANCE_ENDPOINT_DB="${aws_db_instance.database6.endpoint}"
 AWS_DB_INSTANCE_DB_NAME_DB="${aws_db_instance.database6.db_name}"
-AWS_DB_INSTANCE_USER_NAME_DB="${aws_db_instance.database6.master_username}"
+AWS_DB_INSTANCE_USER_NAME_DB="${one(aws_db_instance.database6.master_user_secret[*].secret_arn)}:username::"
 AWS_DB_INSTANCE_PASS_DB="${one(aws_db_instance.database6.master_user_secret[*].secret_arn)}:password::"
 AWS_EFS_FILE_SYSTEM_ID_0="${aws_efs_file_system.EFS5.id}"
 AWS_S3_BUCKET_NAME_OFF_LOAD="s3-off-load-wp-abcd5"
