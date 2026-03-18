@@ -26,8 +26,8 @@ data "aws_region" "current" {}
 
 ### SYSTEM DATA SOURCES ###
 
-data "aws_route53_zone" "Zone1" {
-  name                              = "Zone1"
+data "aws_route53_zone" "CloudMan" {
+  name                              = "cloudman.pro"
 }
 
 data "aws_cloudfront_cache_policy" "policy_cachingoptimized" {
@@ -125,7 +125,7 @@ resource "aws_iam_role_policy_attachment" "instance_Instance3_st_State6_attach" 
 }
 
 resource "aws_acm_certificate" "Certificate1" {
-  domain_name                       = "wp.Zone1"
+  domain_name                       = "wp.cloudman.pro"
   key_algorithm                     = "RSA_2048"
   validation_method                 = "DNS"
   options {
@@ -242,7 +242,7 @@ resource "aws_route53_record" "Route53_Record_Certificate1" {
       type   = dvo.resource_record_type
     }}
   name                              = "${each.value.name}"
-  zone_id                           = data.aws_route53_zone.Zone1.zone_id
+  zone_id                           = data.aws_route53_zone.CloudMan.zone_id
   allow_overwrite                   = true
   records                           = ["${each.value.record}"]
   ttl                               = 300
@@ -250,8 +250,8 @@ resource "aws_route53_record" "Route53_Record_Certificate1" {
 }
 
 resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_CDN6" {
-  name                              = "wp.Zone1"
-  zone_id                           = data.aws_route53_zone.Zone1.zone_id
+  name                              = "wp.cloudman.pro"
+  zone_id                           = data.aws_route53_zone.CloudMan.zone_id
   type                              = "A"
   alias {
     name                            = aws_cloudfront_distribution.CDN6.domain_name
@@ -261,8 +261,8 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_CDN6" {
 }
 
 resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_CDN6" {
-  name                              = "wp.Zone1"
-  zone_id                           = data.aws_route53_zone.Zone1.zone_id
+  name                              = "wp.cloudman.pro"
+  zone_id                           = data.aws_route53_zone.CloudMan.zone_id
   type                              = "AAAA"
   alias {
     name                            = aws_cloudfront_distribution.CDN6.domain_name
@@ -368,7 +368,7 @@ resource "aws_security_group_rule" "rule_instance_Instance3_group_to_efs_file_sy
 }
 
 resource "aws_cloudfront_distribution" "CDN6" {
-  aliases                           = ["wp.Zone1"]
+  aliases                           = ["wp.cloudman.pro"]
   enabled                           = true
   http_version                      = "http2and3"
   is_ipv6_enabled                   = true
@@ -595,7 +595,7 @@ resource "aws_db_instance" "database6" {
 
 resource "aws_db_subnet_group" "subnet_group_database6" {
   name                              = "database6-subnet-group"
-  subnet_ids                        = [aws_subnet.DB_b5.id, aws_subnet.DB_a5.id]
+  subnet_ids                        = [aws_subnet.DB_a5.id, aws_subnet.DB_b5.id]
   tags                              = {
     "Name" = "subnet_group_database6"
     "State" = "State6"
