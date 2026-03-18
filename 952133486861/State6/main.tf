@@ -160,49 +160,49 @@ resource "aws_vpc" "WordPress4" {
   }
 }
 
-resource "aws_subnet" "DB_a5" {
+resource "aws_subnet" "DB_a" {
   vpc_id                            = aws_vpc.WordPress4.id
   availability_zone                 = "us-east-1a"
   cidr_block                        = "10.7.0.0/24"
   map_public_ip_on_launch           = false
   tags                              = {
-    "Name" = "DB_a5"
+    "Name" = "DB_a"
     "State" = "State6"
     "CloudmanUser" = "Ricardo"
   }
 }
 
-resource "aws_subnet" "DB_b5" {
+resource "aws_subnet" "DB_b" {
   vpc_id                            = aws_vpc.WordPress4.id
   availability_zone                 = "us-east-1b"
   cidr_block                        = "10.7.1.0/24"
   map_public_ip_on_launch           = false
   tags                              = {
-    "Name" = "DB_b5"
+    "Name" = "DB_b"
     "State" = "State6"
     "CloudmanUser" = "Ricardo"
   }
 }
 
-resource "aws_subnet" "EFS_a5" {
+resource "aws_subnet" "EFS_a" {
   vpc_id                            = aws_vpc.WordPress4.id
   availability_zone                 = "us-east-1a"
   cidr_block                        = "10.7.2.0/24"
   map_public_ip_on_launch           = false
   tags                              = {
-    "Name" = "EFS_a5"
+    "Name" = "EFS_a"
     "State" = "State6"
     "CloudmanUser" = "Ricardo"
   }
 }
 
-resource "aws_subnet" "EFS_b5" {
+resource "aws_subnet" "EFS_b" {
   vpc_id                            = aws_vpc.WordPress4.id
   availability_zone                 = "us-east-1b"
   cidr_block                        = "10.7.3.0/24"
   map_public_ip_on_launch           = false
   tags                              = {
-    "Name" = "EFS_b5"
+    "Name" = "EFS_b"
     "State" = "State6"
     "CloudmanUser" = "Ricardo"
   }
@@ -570,7 +570,7 @@ resource "aws_db_instance" "database6" {
   db_name                           = "wordpress"
   db_subnet_group_name              = aws_db_subnet_group.subnet_group_database6.name
   allocated_storage                 = 20
-  availability_zone                 = aws_subnet.DB_a5.availability_zone
+  availability_zone                 = aws_subnet.DB_a.availability_zone
   backup_retention_period           = 0
   copy_tags_to_snapshot             = true
   delete_automated_backups          = false
@@ -581,6 +581,7 @@ resource "aws_db_instance" "database6" {
   instance_class                    = "db.t3.micro"
   manage_master_user_password       = true
   max_allocated_storage             = 100
+  skip_final_snapshot               = true
   storage_encrypted                 = true
   storage_type                      = "gp3"
   upgrade_storage_config            = false
@@ -595,7 +596,7 @@ resource "aws_db_instance" "database6" {
 
 resource "aws_db_subnet_group" "subnet_group_database6" {
   name                              = "database6-subnet-group"
-  subnet_ids                        = [aws_subnet.DB_a5.id, aws_subnet.DB_b5.id]
+  subnet_ids                        = [aws_subnet.DB_b.id, aws_subnet.DB_a.id]
   tags                              = {
     "Name" = "subnet_group_database6"
     "State" = "State6"
@@ -640,15 +641,15 @@ resource "aws_efs_file_system" "EFS5" {
   }
 }
 
-resource "aws_efs_mount_target" "mt_EFS5_EFS_a5" {
+resource "aws_efs_mount_target" "mt_EFS5_EFS_a" {
   file_system_id                    = aws_efs_file_system.EFS5.id
-  subnet_id                         = aws_subnet.EFS_a5.id
+  subnet_id                         = aws_subnet.EFS_a.id
   security_groups                   = [aws_security_group.efs_file_system_EFS5_group.id]
 }
 
-resource "aws_efs_mount_target" "mt_EFS5_EFS_b5" {
+resource "aws_efs_mount_target" "mt_EFS5_EFS_b" {
   file_system_id                    = aws_efs_file_system.EFS5.id
-  subnet_id                         = aws_subnet.EFS_b5.id
+  subnet_id                         = aws_subnet.EFS_b.id
   security_groups                   = [aws_security_group.efs_file_system_EFS5_group.id]
 }
 
@@ -693,8 +694,8 @@ AWS_S3_BUCKET_NAME_SCRIPT="wp-script-cloudman2"
 AWS_EFS_ACCESS_POINT_ID_0="${aws_efs_access_point.AP5.id}"
 AWS_DB_INSTANCE_ENDPOINT_DB="${aws_db_instance.database6.endpoint}"
 AWS_DB_INSTANCE_DB_NAME_DB="${aws_db_instance.database6.db_name}"
+AWS_DB_INSTANCE_SECRET_ARN_DB="${one(aws_db_instance.database6.master_user_secret[*].secret_arn)}"
 AWS_DB_INSTANCE_USER_NAME_DB="${one(aws_db_instance.database6.master_user_secret[*].secret_arn)}:username::"
-AWS_DB_INSTANCE_PASS_DB="${one(aws_db_instance.database6.master_user_secret[*].secret_arn)}:password::"
 AWS_EFS_FILE_SYSTEM_ID_0="${aws_efs_file_system.EFS5.id}"
 AWS_S3_BUCKET_NAME_OFF_LOAD="s3-off-load-wp-abcd5"
 EOFENV
