@@ -12,13 +12,8 @@ import {
 }
 
 import {
-  to = aws_subnet.project-subnet-private2-us-east-1b
-  id = "subnet-08c60b7ddb33a0e47"
-}
-
-import {
-  to = aws_subnet.project-subnet-public2-us-east-1b
-  id = "subnet-049cfff09522aa1e8"
+  to = aws_internet_gateway.project-igw
+  id = "igw-0df108f2d8c806e33"
 }
 
 import {
@@ -27,13 +22,18 @@ import {
 }
 
 import {
-  to = aws_internet_gateway.project-igw
-  id = "igw-0df108f2d8c806e33"
+  to = aws_subnet.project-subnet-private2-us-east-1b
+  id = "subnet-08c60b7ddb33a0e47"
 }
 
 import {
   to = aws_vpc.project-vpc
   id = "vpc-0b61653f5fbcdc5fb"
+}
+
+import {
+  to = aws_subnet.project-subnet-public2-us-east-1b
+  id = "subnet-049cfff09522aa1e8"
 }
 
 import {
