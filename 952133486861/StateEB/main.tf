@@ -30,6 +30,21 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
+data "aws_iam_policy_document" "lambda_function_FunctionEB2_st_StateEB_doc" {
+  statement {
+    sid                             = "AllowWriteLogs"
+    effect                          = "Allow"
+    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources                       = ["${aws_cloudwatch_log_group.FunctionEB2.arn}:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_FunctionEB2_st_StateEB" {
+  name                              = "lambda_function_FunctionEB2_st_StateEB"
+  description                       = "Access Policy for FunctionEB2"
+  policy                            = data.aws_iam_policy_document.lambda_function_FunctionEB2_st_StateEB_doc.json
+}
+
 data "aws_iam_policy_document" "lambda_function_FunctionEB_st_StateEB_doc" {
   statement {
     sid                             = "AllowWriteLogs"
@@ -64,6 +79,32 @@ resource "aws_iam_role" "role_lambda_FunctionEB" {
     "State" = "StateEB"
     "CloudmanUser" = "Ricardo"
   }
+}
+
+resource "aws_iam_role" "role_lambda_FunctionEB2" {
+  name                              = "role_lambda_FunctionEB2"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_FunctionEB2"
+    "State" = "StateEB"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_function_FunctionEB2_st_StateEB_attach" {
+  policy_arn                        = aws_iam_policy.lambda_function_FunctionEB2_st_StateEB.arn
+  role                              = aws_iam_role.role_lambda_FunctionEB2.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_function_FunctionEB_st_StateEB_attach" {
@@ -109,9 +150,50 @@ resource "aws_lambda_function" "FunctionEB" {
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_FunctionEB_st_StateEB_attach]
 }
 
+data "archive_file" "archive_CloudMan_FunctionEB2" {
+  output_path                       = "${path.module}/CloudMan_FunctionEB2.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudMan/LambdaFiles/LambdaHub2"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "FunctionEB2" {
+  function_name                     = "FunctionEB2"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudMan_FunctionEB2.output_path}"
+  handler                           = "LambdaHub2.lambda_handler"
+  memory_size                       = 3008
+  publish                           = false
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_FunctionEB2.arn
+  runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudMan_FunctionEB2.output_base64sha256}"
+  timeout                           = 30
+  environment {
+    variables                       = {
+    "NAME" = "FunctionEB2"
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+  }
+  }
+  tags                              = {
+    "Name" = "FunctionEB2"
+    "State" = "StateEB"
+    "CloudmanUser" = "Ricardo"
+  }
+  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_FunctionEB2_st_StateEB_attach]
+}
+
 resource "aws_lambda_permission" "perm_Rule_to_FunctionEB" {
   function_name                     = aws_lambda_function.FunctionEB.function_name
   statement_id                      = "perm_Rule_to_FunctionEB"
+  principal                         = "events.amazonaws.com"
+  action                            = "lambda:InvokeFunction"
+  source_arn                        = aws_cloudwatch_event_rule.Rule.arn
+}
+
+resource "aws_lambda_permission" "perm_Rule_to_FunctionEB2" {
+  function_name                     = aws_lambda_function.FunctionEB2.function_name
+  statement_id                      = "perm_Rule_to_FunctionEB2"
   principal                         = "events.amazonaws.com"
   action                            = "lambda:InvokeFunction"
   source_arn                        = aws_cloudwatch_event_rule.Rule.arn
@@ -138,6 +220,11 @@ resource "aws_cloudwatch_event_target" "Target" {
   rule                              = aws_cloudwatch_event_rule.Rule.name
 }
 
+resource "aws_cloudwatch_event_target" "Target1" {
+  arn                               = aws_lambda_function.FunctionEB2.arn 
+  rule                              = aws_cloudwatch_event_rule.Rule.name
+}
+
 
 
 
@@ -150,6 +237,18 @@ resource "aws_cloudwatch_log_group" "FunctionEB" {
   skip_destroy                      = false
   tags                              = {
     "Name" = "FunctionEB"
+    "State" = "StateEB"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "FunctionEB2" {
+  name                              = "/aws/lambda/FunctionEB2"
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "FunctionEB2"
     "State" = "StateEB"
     "CloudmanUser" = "Ricardo"
   }
