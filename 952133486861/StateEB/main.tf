@@ -30,38 +30,8 @@ data "aws_region" "current" {}
 
 ### CATEGORY: IAM ###
 
-data "aws_iam_policy_document" "lambda_function_FunctionEB2_st_StateEB_doc" {
-  statement {
-    sid                             = "AllowWriteLogs"
-    effect                          = "Allow"
-    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources                       = ["${aws_cloudwatch_log_group.FunctionEB2.arn}:*"]
-  }
-}
-
-resource "aws_iam_policy" "lambda_function_FunctionEB2_st_StateEB" {
-  name                              = "lambda_function_FunctionEB2_st_StateEB"
-  description                       = "Access Policy for FunctionEB2"
-  policy                            = data.aws_iam_policy_document.lambda_function_FunctionEB2_st_StateEB_doc.json
-}
-
-data "aws_iam_policy_document" "lambda_function_FunctionEB_st_StateEB_doc" {
-  statement {
-    sid                             = "AllowWriteLogs"
-    effect                          = "Allow"
-    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources                       = ["${aws_cloudwatch_log_group.FunctionEB.arn}:*"]
-  }
-}
-
-resource "aws_iam_policy" "lambda_function_FunctionEB_st_StateEB" {
-  name                              = "lambda_function_FunctionEB_st_StateEB"
-  description                       = "Access Policy for FunctionEB"
-  policy                            = data.aws_iam_policy_document.lambda_function_FunctionEB_st_StateEB_doc.json
-}
-
-resource "aws_iam_role" "role_lambda_FunctionEB" {
-  name                              = "role_lambda_FunctionEB"
+resource "aws_iam_role" "role_lambda_Function" {
+  name                              = "role_lambda_Function"
   assume_role_policy                = jsonencode({
   "Version": "2012-10-17",
   "Statement": [
@@ -75,41 +45,10 @@ resource "aws_iam_role" "role_lambda_FunctionEB" {
   ]
 })
   tags                              = {
-    "Name" = "role_lambda_FunctionEB"
+    "Name" = "role_lambda_Function"
     "State" = "StateEB"
     "CloudmanUser" = "Ricardo"
   }
-}
-
-resource "aws_iam_role" "role_lambda_FunctionEB2" {
-  name                              = "role_lambda_FunctionEB2"
-  assume_role_policy                = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      }
-    }
-  ]
-})
-  tags                              = {
-    "Name" = "role_lambda_FunctionEB2"
-    "State" = "StateEB"
-    "CloudmanUser" = "Ricardo"
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_function_FunctionEB2_st_StateEB_attach" {
-  policy_arn                        = aws_iam_policy.lambda_function_FunctionEB2_st_StateEB.arn
-  role                              = aws_iam_role.role_lambda_FunctionEB2.name
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_function_FunctionEB_st_StateEB_attach" {
-  policy_arn                        = aws_iam_policy.lambda_function_FunctionEB_st_StateEB.arn
-  role                              = aws_iam_role.role_lambda_FunctionEB.name
 }
 
 
@@ -117,83 +56,41 @@ resource "aws_iam_role_policy_attachment" "lambda_function_FunctionEB_st_StateEB
 
 ### CATEGORY: COMPUTE ###
 
-data "archive_file" "archive_CloudMan_FunctionEB" {
-  output_path                       = "${path.module}/CloudMan_FunctionEB.zip"
+data "archive_file" "archive_CloudMan_Function" {
+  output_path                       = "${path.module}/CloudMan_Function.zip"
   source_dir                        = "${path.module}/.external_modules/CloudMan/LambdaFiles/LambdaHub2"
   type                              = "zip"
 }
 
-resource "aws_lambda_function" "FunctionEB" {
-  function_name                     = "FunctionEB"
+resource "aws_lambda_function" "Function" {
+  function_name                     = "Function"
   architectures                     = ["arm64"]
-  filename                          = "${data.archive_file.archive_CloudMan_FunctionEB.output_path}"
+  filename                          = "${data.archive_file.archive_CloudMan_Function.output_path}"
   handler                           = "LambdaHub2.lambda_handler"
   memory_size                       = 3008
   publish                           = false
   reserved_concurrent_executions    = -1
-  role                              = aws_iam_role.role_lambda_FunctionEB.arn
+  role                              = aws_iam_role.role_lambda_Function.arn
   runtime                           = "python3.13"
-  source_code_hash                  = "${data.archive_file.archive_CloudMan_FunctionEB.output_base64sha256}"
+  source_code_hash                  = "${data.archive_file.archive_CloudMan_Function.output_base64sha256}"
   timeout                           = 30
   environment {
     variables                       = {
-    "NAME" = "FunctionEB"
+    "NAME" = "Function"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
   }
   }
   tags                              = {
-    "Name" = "FunctionEB"
+    "Name" = "Function"
     "State" = "StateEB"
     "CloudmanUser" = "Ricardo"
   }
-  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_FunctionEB_st_StateEB_attach]
 }
 
-data "archive_file" "archive_CloudMan_FunctionEB2" {
-  output_path                       = "${path.module}/CloudMan_FunctionEB2.zip"
-  source_dir                        = "${path.module}/.external_modules/CloudMan/LambdaFiles/LambdaHub2"
-  type                              = "zip"
-}
-
-resource "aws_lambda_function" "FunctionEB2" {
-  function_name                     = "FunctionEB2"
-  architectures                     = ["arm64"]
-  filename                          = "${data.archive_file.archive_CloudMan_FunctionEB2.output_path}"
-  handler                           = "LambdaHub2.lambda_handler"
-  memory_size                       = 3008
-  publish                           = false
-  reserved_concurrent_executions    = -1
-  role                              = aws_iam_role.role_lambda_FunctionEB2.arn
-  runtime                           = "python3.13"
-  source_code_hash                  = "${data.archive_file.archive_CloudMan_FunctionEB2.output_base64sha256}"
-  timeout                           = 30
-  environment {
-    variables                       = {
-    "NAME" = "FunctionEB2"
-    "REGION" = "${data.aws_region.current.name}"
-    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
-  }
-  }
-  tags                              = {
-    "Name" = "FunctionEB2"
-    "State" = "StateEB"
-    "CloudmanUser" = "Ricardo"
-  }
-  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_FunctionEB2_st_StateEB_attach]
-}
-
-resource "aws_lambda_permission" "perm_Rule_to_FunctionEB" {
-  function_name                     = aws_lambda_function.FunctionEB.function_name
-  statement_id                      = "perm_Rule_to_FunctionEB"
-  principal                         = "events.amazonaws.com"
-  action                            = "lambda:InvokeFunction"
-  source_arn                        = aws_cloudwatch_event_rule.Rule.arn
-}
-
-resource "aws_lambda_permission" "perm_Rule_to_FunctionEB2" {
-  function_name                     = aws_lambda_function.FunctionEB2.function_name
-  statement_id                      = "perm_Rule_to_FunctionEB2"
+resource "aws_lambda_permission" "perm_Rule_to_Function" {
+  function_name                     = aws_lambda_function.Function.function_name
+  statement_id                      = "perm_Rule_to_Function"
   principal                         = "events.amazonaws.com"
   action                            = "lambda:InvokeFunction"
   source_arn                        = aws_cloudwatch_event_rule.Rule.arn
@@ -203,6 +100,88 @@ resource "aws_lambda_permission" "perm_Rule_to_FunctionEB2" {
 
 
 ### CATEGORY: INTEGRATION ###
+
+resource "aws_sqs_queue" "Queue" {
+  name                              = "Queue"
+  delay_seconds                     = 0
+  fifo_queue                        = false
+  kms_data_key_reuse_period_seconds = 300
+  max_message_size                  = 262144
+  message_retention_seconds         = 345600
+  receive_wait_time_seconds         = 0
+  sqs_managed_sse_enabled           = true
+  visibility_timeout_seconds        = 30
+  tags                              = {
+    "Name" = "Queue"
+    "State" = "StateEB"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+data "aws_iam_policy_document" "aws_sqs_queue_policy_Queue_st_StateEB_doc" {
+  statement {
+    sid                             = "AllowEventBridgeToSendMessageToSQS"
+    effect                          = "Allow"
+    principals {
+      identifiers                   = ["events.amazonaws.com"]
+      type                          = "Service"
+    }
+    actions                         = ["sqs:SendMessage"]
+    resources                       = ["${aws_sqs_queue.Queue.arn}"]
+    condition {
+      test                          = "StringEquals"
+      values                        = ["${aws_cloudwatch_event_rule.Rule.arn}"]
+      variable                      = "AWS:SourceArn"
+    }
+  }
+}
+
+resource "aws_sqs_queue_policy" "aws_sqs_queue_policy_Queue_st_StateEB" {
+  policy                            = data.aws_iam_policy_document.aws_sqs_queue_policy_Queue_st_StateEB_doc.json
+  queue_url                         = aws_sqs_queue.Queue.id
+  tags                              = {
+    "Name" = "aws_sqs_queue_policy_Queue_st_StateEB"
+    "State" = "StateEB"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+resource "aws_sns_topic" "Topic2" {
+  name                              = "Topic2"
+  tags                              = {
+    "Name" = "Topic2"
+    "State" = "StateEB"
+    "CloudmanUser" = "Ricardo"
+  }
+}
+
+data "aws_iam_policy_document" "aws_sns_topic_policy_Topic2_st_StateEB_doc" {
+  statement {
+    sid                             = "AllowEventBridgeToPublishToSNS"
+    effect                          = "Allow"
+    principals {
+      identifiers                   = ["events.amazonaws.com"]
+      type                          = "Service"
+    }
+    actions                         = ["sns:Publish"]
+    resources                       = ["${aws_sns_topic.Topic2.arn}"]
+    condition {
+      test                          = "StringEquals"
+      values                        = ["${aws_cloudwatch_event_rule.Rule.arn}"]
+      variable                      = "AWS:SourceArn"
+    }
+  }
+}
+
+resource "aws_sns_topic_policy" "aws_sns_topic_policy_Topic2_st_StateEB" {
+  arn                               = aws_sns_topic.Topic2.arn
+  policy                            = data.aws_iam_policy_document.aws_sns_topic_policy_Topic2_st_StateEB_doc.json
+  tags                              = {
+    "Name" = "aws_sns_topic_policy_Topic2_st_StateEB"
+    "State" = "StateEB"
+    "CloudmanUser" = "Ricardo"
+  }
+}
 
 resource "aws_cloudwatch_event_rule" "Rule" {
   name                              = "Rule"
@@ -216,42 +195,18 @@ resource "aws_cloudwatch_event_rule" "Rule" {
 }
 
 resource "aws_cloudwatch_event_target" "Target" {
-  arn                               = aws_lambda_function.FunctionEB.arn 
+  arn                               = aws_sqs_queue.Queue.arn
   rule                              = aws_cloudwatch_event_rule.Rule.name
 }
 
 resource "aws_cloudwatch_event_target" "Target1" {
-  arn                               = aws_lambda_function.FunctionEB2.arn 
+  arn                               = aws_sns_topic.Topic2.arn
   rule                              = aws_cloudwatch_event_rule.Rule.name
 }
 
-
-
-
-### CATEGORY: MONITORING ###
-
-resource "aws_cloudwatch_log_group" "FunctionEB" {
-  name                              = "/aws/lambda/FunctionEB"
-  log_group_class                   = "STANDARD"
-  retention_in_days                 = 1
-  skip_destroy                      = false
-  tags                              = {
-    "Name" = "FunctionEB"
-    "State" = "StateEB"
-    "CloudmanUser" = "Ricardo"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "FunctionEB2" {
-  name                              = "/aws/lambda/FunctionEB2"
-  log_group_class                   = "STANDARD"
-  retention_in_days                 = 1
-  skip_destroy                      = false
-  tags                              = {
-    "Name" = "FunctionEB2"
-    "State" = "StateEB"
-    "CloudmanUser" = "Ricardo"
-  }
+resource "aws_cloudwatch_event_target" "Target2" {
+  arn                               = aws_lambda_function.Function.arn
+  rule                              = aws_cloudwatch_event_rule.Rule.name
 }
 
 
