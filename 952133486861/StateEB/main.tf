@@ -2,6 +2,10 @@ terraform {
   required_version = ">= 1.0.0"
 
   required_providers {
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.4.2"
+    }
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
@@ -52,16 +56,23 @@ resource "aws_iam_role" "role_lambda_FunctionEB" {
 
 ### CATEGORY: COMPUTE ###
 
+data "archive_file" "archive_CloudMan_FunctionEB" {
+  output_path                       = "${path.module}/CloudMan_FunctionEB.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudMan/LambdaFiles/LambdaHub2"
+  type                              = "zip"
+}
+
 resource "aws_lambda_function" "FunctionEB" {
   function_name                     = "FunctionEB"
   architectures                     = ["arm64"]
-  filename                          = "teste"
-  handler                           = "index.lambda_handler"
+  filename                          = "${data.archive_file.archive_CloudMan_FunctionEB.output_path}"
+  handler                           = "LambdaHub2.lambda_handler"
   memory_size                       = 3008
   publish                           = false
   reserved_concurrent_executions    = -1
   role                              = aws_iam_role.role_lambda_FunctionEB.arn
   runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudMan_FunctionEB.output_base64sha256}"
   timeout                           = 30
   environment {
     variables                       = {
