@@ -32,7 +32,6 @@ resource "aws_vpc" "project-vpc" {
   enable_dns_hostnames              = true
   enable_dns_support                = true
   instance_tenancy                  = "default"
-  ipv6_cidr_block                   = "2600:1f18:55da:b600::/56"
   ipv6_cidr_block_network_border_group = "us-east-1"
   tags                              = {
     "Name" = "project-vpc"
