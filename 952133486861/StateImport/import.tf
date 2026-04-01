@@ -7,13 +7,8 @@ terraform {
 }
 
 import {
-  to = aws_subnet.project-subnet-private2-us-east-1b
-  id = "subnet-07af2d8dab282fd0b"
-}
-
-import {
-  to = aws_subnet.project-subnet-public1-us-east-1a
-  id = "subnet-07313a9f351436173"
+  to = aws_subnet.project-subnet-public2-us-east-1b
+  id = "subnet-061e9f909753167db"
 }
 
 import {
@@ -22,8 +17,13 @@ import {
 }
 
 import {
-  to = aws_subnet.project-subnet-public2-us-east-1b
-  id = "subnet-061e9f909753167db"
+  to = aws_vpc.project-vpc
+  id = "vpc-0aa413081b1a16aa1"
+}
+
+import {
+  to = aws_subnet.project-subnet-public1-us-east-1a
+  id = "subnet-07313a9f351436173"
 }
 
 import {
@@ -32,18 +32,8 @@ import {
 }
 
 import {
-  to = aws_vpc.project-vpc
-  id = "vpc-0aa413081b1a16aa1"
-}
-
-import {
-  to = aws_route_table.project-rtb-private1-us-east-1a
-  id = "rtb-02f5383675c85e08c"
-}
-
-import {
-  to = aws_route_table_association.aws_route_table_association_project_subnet_private1_us_east_1a_project_rtb_private1_us_east_1a
-  id = "rtbassoc-0cf203dd249cf5059"
+  to = aws_subnet.project-subnet-private2-us-east-1b
+  id = "subnet-07af2d8dab282fd0b"
 }
 
 import {
@@ -79,5 +69,15 @@ import {
 import {
   to = aws_route_table_association.aws_route_table_association_project_subnet_private2_us_east_1b_project_rtb_private2_us_east_1b
   id = "rtbassoc-006fbbbf84ab8991b"
+}
+
+import {
+  to = aws_route_table.project-rtb-private1-us-east-1a
+  id = "rtb-02f5383675c85e08c"
+}
+
+import {
+  to = aws_route_table_association.aws_route_table_association_project_subnet_private1_us_east_1a_project_rtb_private1_us_east_1a
+  id = "rtbassoc-0cf203dd249cf5059"
 }
 
