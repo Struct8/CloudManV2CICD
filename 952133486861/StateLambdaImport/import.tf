@@ -1,3 +1,11 @@
+terraform {
+  backend "s3" {
+    bucket = "cloudan-v2-cicd"
+    key    = "952133486861/StateLambdaImport/main.tfstate"
+    region = "us-east-1"
+  }
+}
+
 import {
   to = aws_cloudwatch_log_group.TestImport
   id = "TestImport"
