@@ -1,11 +1,3 @@
-terraform {
-  backend "s3" {
-    bucket = "cloudan-v2-cicd"
-    key    = "952133486861/StateImport/main.tfstate"
-    region = "us-east-1"
-  }
-}
-
 import {
   to = aws_subnet.prj-subnet-private2-us-east-1b
   id = "subnet-09457a1536c9373dc"
