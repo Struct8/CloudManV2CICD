@@ -1,0 +1,62 @@
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+    }
+    archive = {
+      source = "hashicorp/archive"
+      version = "~> 2.4.0"
+    }
+  }
+  backend "s3" {
+    bucket = "cloudan-v2-cicd"
+    key    = "952133486861/StateLambdaImport/main.tfstate"
+    region = "us-east-1"
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+data "archive_file" "archive__TestImport" {
+  type        = "zip"
+  output_path = "${path.module}/_TestImport.zip"
+  source_dir  = "${path.module}/.external_modules/LambdaFiles/TestImport"
+}
+
+resource "aws_iam_role" "TestImport_TestImport_role_23fxbua9" {
+  assume_role_policy = "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}"
+  force_detach_policies = false
+  max_session_duration = 3600
+  name = "TestImport-role-23fxbua9"
+  path = "/service-role/"
+}
+
+resource "aws_lambda_function" "TestImport" {
+  architectures = ["arm64"]
+  ephemeral_storage {
+    size = 512
+  }
+  filename = "${data.archive_file.archive__TestImport.output_path}"
+  function_name = "TestImport"
+  handler = "lambda_function.lambda_handler"
+  logging_config {
+    log_format = "Text"
+    log_group = "/aws/lambda/TestImport"
+  }
+  memory_size = 128
+  package_type = "Zip"
+  reserved_concurrent_executions = -1
+  role = "arn:aws:iam::952133486861:role/service-role/TestImport-role-23fxbua9"
+  runtime = "python3.14"
+  source_code_hash = "${data.archive_file.archive__TestImport.output_base64sha256}"
+  tags = {
+    Name = "TestImport"
+  }
+  timeout = 3
+  tracing_config {
+    mode = "PassThrough"
+  }
+}
+
