@@ -202,7 +202,7 @@ resource "aws_iam_role_policy_attachment" "lambda_function_RedirectorV2_st_CDNMa
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AuthCloudManV2" {
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AuthCloudManV2_app_struct8_com" {
   name                              = "app.struct8.com"
   zone_id                           = data.aws_route53_zone.struct8.zone_id
   type                              = "A"
@@ -213,7 +213,7 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AuthCloudManV
   }
 }
 
-resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AuthCloudManV2" {
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AuthCloudManV2_v2_cloudman_pro" {
   name                              = "v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "A"
@@ -224,7 +224,7 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AuthCloudManV
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AuthCloudManV2" {
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AuthCloudManV2_app_struct8_com" {
   name                              = "app.struct8.com"
   zone_id                           = data.aws_route53_zone.struct8.zone_id
   type                              = "AAAA"
@@ -235,7 +235,7 @@ resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AuthCloudM
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AuthCloudManV2" {
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AuthCloudManV2_v2_cloudman_pro" {
   name                              = "v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "AAAA"
