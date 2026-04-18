@@ -47,10 +47,6 @@ data "aws_cognito_user_pool" "CloudManV2" {
   user_pool_id                      = data.aws_cognito_user_pools.CloudManV2.ids[0]
 }
 
-data "aws_s3_bucket" "s3-cloudmanv2-files-dev" {
-  bucket                            = "s3-cloudmanv2-files-dev"
-}
-
 data "aws_dynamodb_table" "CloudManV2-dev" {
   name                              = "CloudManV2-dev"
 }
@@ -217,7 +213,7 @@ resource "aws_iam_role" "role_lambda_AgentV2-dev" {
   tags                              = {
     "Name" = "role_lambda_AgentV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -239,7 +235,7 @@ resource "aws_iam_role" "role_lambda_DBAccessV2-dev" {
   tags                              = {
     "Name" = "role_lambda_DBAccessV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -261,7 +257,7 @@ resource "aws_iam_role" "role_lambda_GithubGateKeeper-dev" {
   tags                              = {
     "Name" = "role_lambda_GithubGateKeeper-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -283,7 +279,7 @@ resource "aws_iam_role" "role_lambda_HCLAWSV2-dev" {
   tags                              = {
     "Name" = "role_lambda_HCLAWSV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -305,7 +301,7 @@ resource "aws_iam_role" "role_lambda_HCLCloudFlare-dev" {
   tags                              = {
     "Name" = "role_lambda_HCLCloudFlare-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -327,7 +323,7 @@ resource "aws_iam_role" "role_lambda_HCLGCore-dev" {
   tags                              = {
     "Name" = "role_lambda_HCLGCore-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -372,7 +368,7 @@ resource "aws_acm_certificate" "AppCloudManV2-dev" {
   tags                              = {
     "Name" = "AppCloudManV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -401,7 +397,7 @@ resource "aws_route53_record" "Route53_Record_AppCloudManV2-dev" {
   type                              = "${each.value.type}"
 }
 
-resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2-dev" {
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2-dev_dev_v2_cloudman_pro" {
   name                              = "dev.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "A"
@@ -412,7 +408,7 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AppCloudManV2-dev" {
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AppCloudManV2-dev_dev_v2_cloudman_pro" {
   name                              = "dev.v2.cloudman.pro"
   zone_id                           = data.aws_route53_zone.Cloudman.zone_id
   type                              = "AAAA"
@@ -504,7 +500,7 @@ locals {
       path             = "/GithubGateKeeper-dev"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:GithubGateKeeper-dev/invocations"
       type             = "aws_proxy"
-      methods          = ["get", "post"]
+      methods          = ["post", "get"]
       method_auth      = {}
       enable_mock      = false
       credentials      = null
@@ -635,7 +631,7 @@ resource "aws_api_gateway_rest_api" "APIAppCloudManV2-dev" {
   tags                              = {
     "Name" = "APIAppCloudManV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -651,7 +647,7 @@ resource "aws_api_gateway_stage" "st-dev" {
   tags                              = {
     "Name" = "st-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -679,10 +675,6 @@ resource "aws_cloudfront_distribution" "AppCloudManV2-dev" {
         whitelisted_names           = ["stage"]
       }
     }
-  }
-  logging_config {
-    bucket                          = aws_s3_bucket.app-cloudman-v2-logs-dev.bucket_domain_name
-    include_cookies                 = false
   }
   ordered_cache_behavior {
     target_origin_id                = "origin_APIAppCloudManV2-dev"
@@ -726,7 +718,7 @@ resource "aws_cloudfront_distribution" "AppCloudManV2-dev" {
   tags                              = {
     "Name" = "AppCloudManV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
   viewer_certificate {
@@ -735,7 +727,6 @@ resource "aws_cloudfront_distribution" "AppCloudManV2-dev" {
     minimum_protocol_version        = "TLSv1.2_2021"
     ssl_support_method              = "sni-only"
   }
-  depends_on                        = [aws_s3_bucket_policy.aws_s3_bucket_policy_app-cloudman-v2-logs-dev_st_AppCloudManV2-dev]
 }
 
 resource "aws_cloudfront_origin_access_control" "oac_app-cloudman-v2-dev" {
@@ -758,40 +749,15 @@ resource "aws_s3_bucket" "app-cloudman-v2-dev" {
   tags                              = {
     "Name" = "app-cloudman-v2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
-}
-
-resource "aws_s3_bucket" "app-cloudman-v2-logs-dev" {
-  bucket                            = "app-cloudman-v2-logs-dev"
-  force_destroy                     = true
-  object_lock_enabled               = false
-  tags                              = {
-    "Name" = "app-cloudman-v2-logs-dev"
-    "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
-    "Stage" = "dev"
-  }
-}
-
-resource "aws_s3_bucket_acl" "app-cloudman-v2-logs-dev_acl" {
-  acl                               = "log-delivery-write"
-  bucket                            = aws_s3_bucket.app-cloudman-v2-logs-dev.id
-  depends_on                        = [aws_s3_bucket_ownership_controls.app-cloudman-v2-logs-dev_controls]
 }
 
 resource "aws_s3_bucket_ownership_controls" "app-cloudman-v2-dev_controls" {
   bucket                            = aws_s3_bucket.app-cloudman-v2-dev.id
   rule {
     object_ownership                = "BucketOwnerEnforced"
-  }
-}
-
-resource "aws_s3_bucket_ownership_controls" "app-cloudman-v2-logs-dev_controls" {
-  bucket                            = aws_s3_bucket.app-cloudman-v2-logs-dev.id
-  rule {
-    object_ownership                = "BucketOwnerPreferred"
   }
 }
 
@@ -818,56 +784,10 @@ resource "aws_s3_bucket_policy" "aws_s3_bucket_policy_app-cloudman-v2-dev_st_App
   policy                            = data.aws_iam_policy_document.aws_s3_bucket_policy_app-cloudman-v2-dev_st_AppCloudManV2-dev_doc.json
 }
 
-data "aws_iam_policy_document" "aws_s3_bucket_policy_app-cloudman-v2-logs-dev_st_AppCloudManV2-dev_doc" {
-  statement {
-    sid                             = "AllowGetAcl"
-    effect                          = "Allow"
-    principals {
-      identifiers                   = ["cloudfront.amazonaws.com"]
-      type                          = "Service"
-    }
-    actions                         = ["s3:GetBucketAcl"]
-    resources                       = ["${aws_s3_bucket.app-cloudman-v2-logs-dev.arn}"]
-    condition {
-      test                          = "StringEquals"
-      values                        = ["${data.aws_caller_identity.current.account_id}"]
-      variable                      = "AWS:SourceAccount"
-    }
-  }
-  statement {
-    sid                             = "AllowPutLogs"
-    effect                          = "Allow"
-    principals {
-      identifiers                   = ["cloudfront.amazonaws.com"]
-      type                          = "Service"
-    }
-    actions                         = ["s3:PutObject"]
-    resources                       = ["${aws_s3_bucket.app-cloudman-v2-logs-dev.arn}/*"]
-    condition {
-      test                          = "StringEquals"
-      values                        = ["${data.aws_caller_identity.current.account_id}"]
-      variable                      = "AWS:SourceAccount"
-    }
-  }
-}
-
-resource "aws_s3_bucket_policy" "aws_s3_bucket_policy_app-cloudman-v2-logs-dev_st_AppCloudManV2-dev" {
-  bucket                            = aws_s3_bucket.app-cloudman-v2-logs-dev.id
-  policy                            = data.aws_iam_policy_document.aws_s3_bucket_policy_app-cloudman-v2-logs-dev_st_AppCloudManV2-dev_doc.json
-}
-
 resource "aws_s3_bucket_public_access_block" "app-cloudman-v2-dev_block" {
   block_public_acls                 = true
   block_public_policy               = true
   bucket                            = aws_s3_bucket.app-cloudman-v2-dev.id
-  ignore_public_acls                = true
-  restrict_public_buckets           = true
-}
-
-resource "aws_s3_bucket_public_access_block" "app-cloudman-v2-logs-dev_block" {
-  block_public_acls                 = true
-  block_public_policy               = true
-  bucket                            = aws_s3_bucket.app-cloudman-v2-logs-dev.id
   ignore_public_acls                = true
   restrict_public_buckets           = true
 }
@@ -883,27 +803,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "app-cloudman-v2-d
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "app-cloudman-v2-logs-dev_configuration" {
-  bucket                            = aws_s3_bucket.app-cloudman-v2-logs-dev.id
-  expected_bucket_owner             = data.aws_caller_identity.current.account_id
-  rule {
-    bucket_key_enabled              = false
-    apply_server_side_encryption_by_default {
-      sse_algorithm                 = "AES256"
-    }
-  }
-}
-
 resource "aws_s3_bucket_versioning" "app-cloudman-v2-dev_versioning" {
   bucket                            = aws_s3_bucket.app-cloudman-v2-dev.id
-  versioning_configuration {
-    mfa_delete                      = "Disabled"
-    status                          = "Suspended"
-  }
-}
-
-resource "aws_s3_bucket_versioning" "app-cloudman-v2-logs-dev_versioning" {
-  bucket                            = aws_s3_bucket.app-cloudman-v2-logs-dev.id
   versioning_configuration {
     mfa_delete                      = "Disabled"
     status                          = "Suspended"
@@ -936,20 +837,18 @@ resource "aws_lambda_function" "AgentV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "8"
     "NAME" = "AgentV2-dev"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "CloudManV2-dev"
-    "AWS_LAMBDA_FUNCTION_TARGET_NAME_0" = "GithubGateKeeper-dev"
-    "AWS_DYNAMODB_TABLE_TARGET_ARN_0" = data.aws_dynamodb_table.CloudManV2-dev.arn
-    "AWS_LAMBDA_FUNCTION_TARGET_ARN_0" = aws_lambda_function.GithubGateKeeper-dev.arn
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+    "AWS_DYNAMODB_TABLE_NAME_0" = "CloudManV2-dev"
+    "AWS_LAMBDA_FUNCTION_NAME_0" = "GithubGateKeeper-dev"
   }
   }
   tags                              = {
     "Name" = "AgentV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_AgentV2-dev_st_AppCloudManV2-dev_attach]
@@ -976,12 +875,11 @@ resource "aws_lambda_function" "DBAccessV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "8"
     "NAME" = "DBAccessV2-dev"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "AWS_S3_BUCKET_TARGET_NAME_0" = "s3-cloudmanv2-files-dev"
-    "AWS_S3_BUCKET_TARGET_ARN_0" = data.aws_s3_bucket.s3-cloudmanv2-files-dev.arn
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+    "AWS_S3_BUCKET_NAME_0" = "s3-cloudmanv2-files-dev"
   }
   }
   lifecycle {
@@ -992,7 +890,7 @@ resource "aws_lambda_function" "DBAccessV2-dev" {
   tags                              = {
     "Name" = "DBAccessV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_DBAccessV2-dev_st_AppCloudManV2-dev_attach]
@@ -1022,20 +920,24 @@ resource "aws_lambda_function" "GithubGateKeeper-dev" {
     "CLOUDMAN_CICD_STAGE" = "dev"
     "APP_URL" = "v2.cloudman.pro"
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "8"
     "NAME" = "GithubGateKeeper-dev"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "AWS_SSM_PARAMETER_TARGET_NAME_APPKEY" = "GitHubAppKeyDev"
-    "AWS_SSM_PARAMETER_TARGET_NAME_SECRET" = "GithubClientAndSecret"
-    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "CloudManV2-dev"
-    "AWS_DYNAMODB_TABLE_TARGET_ARN_0" = data.aws_dynamodb_table.CloudManV2-dev.arn
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+    "AWS_SSM_PARAMETER_NAME_APPKEY" = "GitHubAppKeyDev"
+    "AWS_SSM_PARAMETER_NAME_SECRET" = "GithubClientAndSecret"
+    "AWS_DYNAMODB_TABLE_NAME_0" = "CloudManV2-dev"
   }
+  }
+  lifecycle {
+    create_before_destroy           = false
+    ignore_changes                  = [filename]
+    prevent_destroy                 = false
   }
   tags                              = {
     "Name" = "GithubGateKeeper-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_GithubGateKeeper-dev_st_AppCloudManV2-dev_attach]
@@ -1062,10 +964,10 @@ resource "aws_lambda_function" "HCLAWSV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "8"
     "NAME" = "HCLAWSV2-dev"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
   }
   }
   lifecycle {
@@ -1076,7 +978,7 @@ resource "aws_lambda_function" "HCLAWSV2-dev" {
   tags                              = {
     "Name" = "HCLAWSV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLAWSV2-dev_st_AppCloudManV2-dev_attach]
@@ -1103,16 +1005,16 @@ resource "aws_lambda_function" "HCLCloudFlare-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "8"
     "NAME" = "HCLCloudFlare-dev"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
   }
   }
   tags                              = {
     "Name" = "HCLCloudFlare-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLCloudFlare-dev_st_AppCloudManV2-dev_attach]
@@ -1139,16 +1041,16 @@ resource "aws_lambda_function" "HCLGCore-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "6"
+    "CICD_VERSION" = "8"
     "NAME" = "HCLGCore-dev"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
   }
   }
   tags                              = {
     "Name" = "HCLGCore-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLGCore-dev_st_AppCloudManV2-dev_attach]
@@ -1223,7 +1125,7 @@ resource "aws_cloudwatch_log_group" "AgentV2-dev" {
   tags                              = {
     "Name" = "AgentV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -1236,7 +1138,7 @@ resource "aws_cloudwatch_log_group" "AppCloudManV2-ST-dev" {
   tags                              = {
     "Name" = "AppCloudManV2-ST-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -1249,7 +1151,7 @@ resource "aws_cloudwatch_log_group" "DBAccessV2-dev" {
   tags                              = {
     "Name" = "DBAccessV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -1262,7 +1164,7 @@ resource "aws_cloudwatch_log_group" "GithubGateKeeper-dev" {
   tags                              = {
     "Name" = "GithubGateKeeper-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -1275,7 +1177,7 @@ resource "aws_cloudwatch_log_group" "HCLAWSV2-dev" {
   tags                              = {
     "Name" = "HCLAWSV2-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -1288,7 +1190,7 @@ resource "aws_cloudwatch_log_group" "HCLCloudFlare-dev" {
   tags                              = {
     "Name" = "HCLCloudFlare-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
@@ -1301,7 +1203,7 @@ resource "aws_cloudwatch_log_group" "HCLGCore-dev" {
   tags                              = {
     "Name" = "HCLGCore-dev"
     "State" = "AppCloudManV2-dev"
-    "CloudmanUser" = "CloudMan2"
+    "CloudmanUser" = "Struc8"
     "Stage" = "dev"
   }
 }
