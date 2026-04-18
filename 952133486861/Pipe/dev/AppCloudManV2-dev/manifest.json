@@ -14,12 +14,13 @@
       ]
     }
   ],
-  "action": "apply",
-  "trigger_id": "1773101454908",
+  "action": "plan",
+  "trigger_id": "1776518355915",
   "backend_global_config": {
     "provider": "aws",
-    "role_arn": "arn:aws:iam::952133486861:role/CloudMan-Gitops-CloudManPro-CloudManV2CICD",
-    "region": "us-east-1"
+    "role_arn": "arn:aws:iam::952133486861:role/CloudMan-Gitops-Struct8-CloudManV2CICD",
+    "region": "us-east-1",
+    "bucket": "cloudan-v2-cicd"
   },
   "pipeline_stages": [
     {
@@ -30,7 +31,7 @@
           "path": "952133486861/Pipe/dev/AppCloudManV2-dev",
           "provider": "aws",
           "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/CloudMan-Gitops-CloudManPro-CloudManV2CICD",
+            "role_arn": "arn:aws:iam::952133486861:role/CloudMan-Gitops-Struct8-CloudManV2CICD",
             "region": "us-east-1",
             "secret_name": "AUTH_AWS_952133486861"
           }
