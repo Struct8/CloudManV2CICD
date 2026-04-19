@@ -26,56 +26,56 @@ data "aws_region" "current" {}
 
 ### CATEGORY: STORAGE ###
 
-resource "aws_s3_bucket" "struct8-cloudformation-template" {
-  bucket                            = "struct8-cloudformation-template"
+resource "aws_s3_bucket" "struct8-public-cloudformation-template" {
+  bucket                            = "struct8-public-cloudformation-template"
   force_destroy                     = false
   object_lock_enabled               = false
   tags                              = {
-    "Name" = "struct8-cloudformation-template"
+    "Name" = "struct8-public-cloudformation-template"
     "State" = "CloudformationTemplate"
     "Struct8User" = "Struc8"
   }
 }
 
-resource "aws_s3_bucket_ownership_controls" "struct8-cloudformation-template_controls" {
-  bucket                            = aws_s3_bucket.struct8-cloudformation-template.id
+resource "aws_s3_bucket_ownership_controls" "struct8-public-cloudformation-template_controls" {
+  bucket                            = aws_s3_bucket.struct8-public-cloudformation-template.id
   rule {
     object_ownership                = "BucketOwnerEnforced"
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "struct8-cloudformation-template_block" {
+resource "aws_s3_bucket_public_access_block" "struct8-public-cloudformation-template_block" {
   block_public_acls                 = false
   block_public_policy               = false
-  bucket                            = aws_s3_bucket.struct8-cloudformation-template.id
+  bucket                            = aws_s3_bucket.struct8-public-cloudformation-template.id
   ignore_public_acls                = false
   restrict_public_buckets           = false
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "struct8-cloudformation-template_configuration" {
-  bucket                            = aws_s3_bucket.struct8-cloudformation-template.id
+resource "aws_s3_bucket_server_side_encryption_configuration" "struct8-public-cloudformation-template_configuration" {
+  bucket                            = aws_s3_bucket.struct8-public-cloudformation-template.id
   expected_bucket_owner             = data.aws_caller_identity.current.account_id
   rule {
     bucket_key_enabled              = true
   }
 }
 
-resource "aws_s3_bucket_versioning" "struct8-cloudformation-template_versioning" {
-  bucket                            = aws_s3_bucket.struct8-cloudformation-template.id
+resource "aws_s3_bucket_versioning" "struct8-public-cloudformation-template_versioning" {
+  bucket                            = aws_s3_bucket.struct8-public-cloudformation-template.id
   versioning_configuration {
     mfa_delete                      = "Disabled"
     status                          = "Suspended"
   }
 }
 
-resource "aws_s3_object" "CrossAccountCloudMan" {
-  source                            = "${path.module}/.external_modules/CloudMan/CloudFrontTemplate/CrossAccountCloudMan.yaml"
-  bucket                            = aws_s3_bucket.struct8-cloudformation-template.bucket
+resource "aws_s3_object" "CrossAccountStruct8" {
+  source                            = "${path.module}/.external_modules/CloudMan/CloudFrontTemplate/CrossAccountStruct8.yaml"
+  bucket                            = aws_s3_bucket.struct8-public-cloudformation-template.bucket
   content_type                      = "text/yaml"
-  etag                              = filemd5("${path.module}/.external_modules/CloudMan/CloudFrontTemplate/CrossAccountCloudMan.yaml")
-  key                               = "CrossAccountCloudMan.yaml"
+  etag                              = filemd5("${path.module}/.external_modules/CloudMan/CloudFrontTemplate/CrossAccountStruct8.yaml")
+  key                               = "CrossAccountStruct8.yaml"
   tags                              = {
-    "Name" = "CrossAccountCloudMan"
+    "Name" = "CrossAccountStruct8"
     "State" = "CloudformationTemplate"
     "Struct8User" = "Struc8"
   }
@@ -83,7 +83,7 @@ resource "aws_s3_object" "CrossAccountCloudMan" {
 
 resource "aws_s3_object" "TerraformBackend" {
   source                            = "${path.module}/.external_modules/CloudMan/CloudFrontTemplate/TerraformBackend.yml"
-  bucket                            = aws_s3_bucket.struct8-cloudformation-template.bucket
+  bucket                            = aws_s3_bucket.struct8-public-cloudformation-template.bucket
   content_type                      = "text/yaml"
   etag                              = filemd5("${path.module}/.external_modules/CloudMan/CloudFrontTemplate/TerraformBackend.yml")
   key                               = "TerraformBackend.yml"
