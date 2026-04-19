@@ -30,8 +30,8 @@ data "aws_region" "current" {}
 
 ### SYSTEM DATA SOURCES ###
 
-data "aws_route53_zone" "Cloudman" {
-  name                              = "cloudman.pro"
+data "aws_route53_zone" "struct8" {
+  name                              = "struct8.com"
 }
 
 
@@ -45,10 +45,6 @@ data "aws_cognito_user_pools" "CloudManV2" {
 
 data "aws_cognito_user_pool" "CloudManV2" {
   user_pool_id                      = data.aws_cognito_user_pools.CloudManV2.ids[0]
-}
-
-data "aws_s3_bucket" "s3-cloudmanv2-files-test" {
-  bucket                            = "s3-cloudmanv2-files-test"
 }
 
 data "aws_dynamodb_table" "CloudManV2-test" {
@@ -217,7 +213,7 @@ resource "aws_iam_role" "role_lambda_AgentV2-test" {
   tags                              = {
     "Name" = "role_lambda_AgentV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -239,7 +235,7 @@ resource "aws_iam_role" "role_lambda_DBAccessV2-test" {
   tags                              = {
     "Name" = "role_lambda_DBAccessV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -261,7 +257,7 @@ resource "aws_iam_role" "role_lambda_GithubGateKeeper-test" {
   tags                              = {
     "Name" = "role_lambda_GithubGateKeeper-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -283,7 +279,7 @@ resource "aws_iam_role" "role_lambda_HCLAWSV2-test" {
   tags                              = {
     "Name" = "role_lambda_HCLAWSV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -305,7 +301,7 @@ resource "aws_iam_role" "role_lambda_HCLCloudFlare-test" {
   tags                              = {
     "Name" = "role_lambda_HCLCloudFlare-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -327,7 +323,7 @@ resource "aws_iam_role" "role_lambda_HCLGCore-test" {
   tags                              = {
     "Name" = "role_lambda_HCLGCore-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -363,23 +359,27 @@ resource "aws_iam_role_policy_attachment" "lambda_function_HCLGCore-test_st_AppC
 }
 
 resource "aws_acm_certificate" "AppCloudManV2-test" {
-  domain_name                       = "test.v2.cloudman.pro"
+  domain_name                       = "test.app.struct8.com"
   key_algorithm                     = "RSA_2048"
   validation_method                 = "DNS"
+  lifecycle {
+    create_before_destroy           = true
+    prevent_destroy                 = false
+  }
   options {
     certificate_transparency_logging_preference = "ENABLED"
   }
   tags                              = {
     "Name" = "AppCloudManV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
 
 resource "aws_acm_certificate_validation" "Validation_AppCloudManV2-test" {
   certificate_arn                   = aws_acm_certificate.AppCloudManV2-test.arn
-  validation_record_fqdns           = [for record in aws_route53_record.Route53_Record_AppCloudManV2-test : record.fqdn]
+  validation_record_fqdns           = [for record in aws_route53_record.Route53_Record_AppCloudManV2-test_test_app_struct8_com : record.fqdn]
 }
 
 
@@ -387,23 +387,22 @@ resource "aws_acm_certificate_validation" "Validation_AppCloudManV2-test" {
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_route53_record" "Route53_Record_AppCloudManV2-test" {
-  for_each                          = {for dvo in aws_acm_certificate.AppCloudManV2-test.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name,
-      record = dvo.resource_record_value,
-      type   = dvo.resource_record_type
-    }}
-  name                              = "${each.value.name}"
-  zone_id                           = data.aws_route53_zone.Cloudman.zone_id
+resource "aws_route53_record" "Route53_Record_AppCloudManV2-test_test_app_struct8_com" {
+  for_each                          = {
+    for dvo in aws_acm_certificate.AppCloudManV2-test.domain_validation_options : dvo.domain_name => dvo
+    if dvo.domain_name == "test.app.struct8.com"
+  }
+  name                              = "${each.value.resource_record_name}"
+  zone_id                           = data.aws_route53_zone.struct8.zone_id
   allow_overwrite                   = true
-  records                           = ["${each.value.record}"]
+  records                           = ["${each.value.resource_record_value}"]
   ttl                               = 300
-  type                              = "${each.value.type}"
+  type                              = "${each.value.resource_record_type}"
 }
 
-resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2-test" {
-  name                              = "test.v2.cloudman.pro"
-  zone_id                           = data.aws_route53_zone.Cloudman.zone_id
+resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2-test_test_app_struct8_com" {
+  name                              = "test.app.struct8.com"
+  zone_id                           = data.aws_route53_zone.struct8.zone_id
   type                              = "A"
   alias {
     name                            = aws_cloudfront_distribution.AppCloudManV2-test.domain_name
@@ -412,9 +411,9 @@ resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2
   }
 }
 
-resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AppCloudManV2-test" {
-  name                              = "test.v2.cloudman.pro"
-  zone_id                           = data.aws_route53_zone.Cloudman.zone_id
+resource "aws_route53_record" "alias_aaaa_aws_cloudfront_distribution_AppCloudManV2-test_test_app_struct8_com" {
+  name                              = "test.app.struct8.com"
+  zone_id                           = data.aws_route53_zone.struct8.zone_id
   type                              = "AAAA"
   alias {
     name                            = aws_cloudfront_distribution.AppCloudManV2-test.domain_name
@@ -504,7 +503,7 @@ locals {
       path             = "/GithubGateKeeper-test"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:GithubGateKeeper-test/invocations"
       type             = "aws_proxy"
-      methods          = ["get", "post"]
+      methods          = ["post", "get"]
       method_auth      = {}
       enable_mock      = false
       credentials      = null
@@ -635,7 +634,7 @@ resource "aws_api_gateway_rest_api" "APIAppCloudManV2-test" {
   tags                              = {
     "Name" = "APIAppCloudManV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -651,13 +650,13 @@ resource "aws_api_gateway_stage" "st-test" {
   tags                              = {
     "Name" = "st-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
 
 resource "aws_cloudfront_distribution" "AppCloudManV2-test" {
-  aliases                           = ["test.v2.cloudman.pro"]
+  aliases                           = ["test.app.struct8.com"]
   default_root_object               = "index.html"
   enabled                           = true
   http_version                      = "http2and3"
@@ -722,7 +721,7 @@ resource "aws_cloudfront_distribution" "AppCloudManV2-test" {
   tags                              = {
     "Name" = "AppCloudManV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
   viewer_certificate {
@@ -753,7 +752,7 @@ resource "aws_s3_bucket" "app-cloudman-v2-test" {
   tags                              = {
     "Name" = "app-cloudman-v2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -841,20 +840,18 @@ resource "aws_lambda_function" "AgentV2-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "7"
+    "CICD_VERSION" = "8"
     "NAME" = "AgentV2-test"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "AWS_LAMBDA_FUNCTION_TARGET_NAME_0" = "GithubGateKeeper-test"
-    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "CloudManV2-test"
-    "AWS_LAMBDA_FUNCTION_TARGET_ARN_0" = aws_lambda_function.GithubGateKeeper-test.arn
-    "AWS_DYNAMODB_TABLE_TARGET_ARN_0" = data.aws_dynamodb_table.CloudManV2-test.arn
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+    "AWS_LAMBDA_FUNCTION_NAME_0" = "GithubGateKeeper-test"
+    "AWS_DYNAMODB_TABLE_NAME_0" = "CloudManV2-test"
   }
   }
   tags                              = {
     "Name" = "AgentV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_AgentV2-test_st_AppCloudManV2-test_attach]
@@ -881,12 +878,11 @@ resource "aws_lambda_function" "DBAccessV2-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "7"
+    "CICD_VERSION" = "8"
     "NAME" = "DBAccessV2-test"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "AWS_S3_BUCKET_TARGET_NAME_0" = "s3-cloudmanv2-files-test"
-    "AWS_S3_BUCKET_TARGET_ARN_0" = data.aws_s3_bucket.s3-cloudmanv2-files-test.arn
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+    "AWS_S3_BUCKET_NAME_0" = "s3-cloudmanv2-files-test"
   }
   }
   lifecycle {
@@ -897,7 +893,7 @@ resource "aws_lambda_function" "DBAccessV2-test" {
   tags                              = {
     "Name" = "DBAccessV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_DBAccessV2-test_st_AppCloudManV2-test_attach]
@@ -925,16 +921,15 @@ resource "aws_lambda_function" "GithubGateKeeper-test" {
   environment {
     variables                       = {
     "CLOUDMAN_CICD_STAGE" = "dev"
-    "APP_URL" = "v2.cloudman.pro"
+    "APP_URL" = "app.struct8.com"
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "7"
+    "CICD_VERSION" = "8"
     "NAME" = "GithubGateKeeper-test"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
-    "AWS_DYNAMODB_TABLE_TARGET_NAME_0" = "CloudManV2-test"
-    "AWS_SSM_PARAMETER_TARGET_NAME_APPKEY" = "GitHubAppKeyDev"
-    "AWS_SSM_PARAMETER_TARGET_NAME_SECRET" = "GithubClientAndSecret"
-    "AWS_DYNAMODB_TABLE_TARGET_ARN_0" = data.aws_dynamodb_table.CloudManV2-test.arn
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+    "AWS_DYNAMODB_TABLE_NAME_0" = "CloudManV2-test"
+    "AWS_SSM_PARAMETER_NAME_APPKEY" = "GitHubAppKeyDev"
+    "AWS_SSM_PARAMETER_NAME_SECRET" = "GithubClientAndSecret"
   }
   }
   lifecycle {
@@ -945,7 +940,7 @@ resource "aws_lambda_function" "GithubGateKeeper-test" {
   tags                              = {
     "Name" = "GithubGateKeeper-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_GithubGateKeeper-test_st_AppCloudManV2-test_attach]
@@ -972,10 +967,10 @@ resource "aws_lambda_function" "HCLAWSV2-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "7"
+    "CICD_VERSION" = "8"
     "NAME" = "HCLAWSV2-test"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
   }
   }
   lifecycle {
@@ -986,7 +981,7 @@ resource "aws_lambda_function" "HCLAWSV2-test" {
   tags                              = {
     "Name" = "HCLAWSV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLAWSV2-test_st_AppCloudManV2-test_attach]
@@ -1013,16 +1008,16 @@ resource "aws_lambda_function" "HCLCloudFlare-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "7"
+    "CICD_VERSION" = "8"
     "NAME" = "HCLCloudFlare-test"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
   }
   }
   tags                              = {
     "Name" = "HCLCloudFlare-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLCloudFlare-test_st_AppCloudManV2-test_attach]
@@ -1049,16 +1044,16 @@ resource "aws_lambda_function" "HCLGCore-test" {
   environment {
     variables                       = {
     "CICD_STAGE" = "test"
-    "CICD_VERSION" = "7"
+    "CICD_VERSION" = "8"
     "NAME" = "HCLGCore-test"
-    "REGION" = data.aws_region.current.name
-    "ACCOUNT" = data.aws_caller_identity.current.account_id
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
   }
   }
   tags                              = {
     "Name" = "HCLGCore-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLGCore-test_st_AppCloudManV2-test_attach]
@@ -1133,7 +1128,7 @@ resource "aws_cloudwatch_log_group" "AgentV2-test" {
   tags                              = {
     "Name" = "AgentV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -1146,7 +1141,7 @@ resource "aws_cloudwatch_log_group" "AppCloudManV2-ST-test" {
   tags                              = {
     "Name" = "AppCloudManV2-ST-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -1159,7 +1154,7 @@ resource "aws_cloudwatch_log_group" "DBAccessV2-test" {
   tags                              = {
     "Name" = "DBAccessV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -1172,7 +1167,7 @@ resource "aws_cloudwatch_log_group" "GithubGateKeeper-test" {
   tags                              = {
     "Name" = "GithubGateKeeper-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -1185,7 +1180,7 @@ resource "aws_cloudwatch_log_group" "HCLAWSV2-test" {
   tags                              = {
     "Name" = "HCLAWSV2-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -1198,7 +1193,7 @@ resource "aws_cloudwatch_log_group" "HCLCloudFlare-test" {
   tags                              = {
     "Name" = "HCLCloudFlare-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }
@@ -1211,7 +1206,7 @@ resource "aws_cloudwatch_log_group" "HCLGCore-test" {
   tags                              = {
     "Name" = "HCLGCore-test"
     "State" = "AppCloudManV2-test"
-    "CloudmanUser" = "SystemUser"
+    "Struct8User" = "SystemUser"
     "Stage" = "test"
   }
 }

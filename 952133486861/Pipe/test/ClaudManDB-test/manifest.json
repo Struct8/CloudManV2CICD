@@ -1,25 +1,46 @@
 {
-  "external_repositories": [],
-  "action": "destroy",
-  "trigger_id": "1773339921582",
+  "external_repositories": [
+    {
+      "repo_name": "CloudManMainV2",
+      "org": "Struct8",
+      "branch": "main",
+      "target_dir": ".external_modules/CloudManMainV2",
+      "folders": [
+        "LambdaFiles/GithubGateKeeper",
+        "LambdaFiles/HCLAWSV2",
+        "LambdaFiles/DBAccessV2",
+        "LambdaFiles/AgentV2",
+        "LambdaFiles/HCLCloudFlare"
+      ]
+    }
+  ],
+  "action": "apply",
+  "trigger_id": "1776622615077",
   "backend_global_config": {
     "provider": "aws",
-    "role_arn": "arn:aws:iam::952133486861:role/CloudMan-Gitops-CloudManPro-CloudManV2CICD",
+    "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-CloudManV2CICD",
     "region": "us-east-1",
     "bucket": "cloudan-v2-cicd"
   },
   "pipeline_stages": [
     {
-      "stage_name": "Manual Trigger: ClaudManDB-test",
+      "stage_name": "APPLY: test",
       "parallel_execution": false,
       "states": [
         {
           "path": "952133486861/Pipe/test/ClaudManDB-test",
           "provider": "aws",
           "target_auth": {
-            "role_arn": "arn:aws:iam::952133486861:role/CloudMan-Gitops-CloudManPro-CloudManV2CICD",
-            "region": "us-east-1",
-            "secret_name": "AUTH_AWS_952133486861"
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-CloudManV2CICD",
+            "region": "us-east-1"
+          }
+        },
+        {
+          "path": "952133486861/Pipe/test/AppCloudManV2-test",
+          "provider": "aws",
+          "target_auth": {
+            "role_arn": "arn:aws:iam::952133486861:role/Struct8-Gitops-Struct8-CloudManV2CICD",
+            "region": "us-east-1"
           }
         }
       ]
