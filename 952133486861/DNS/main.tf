@@ -40,7 +40,7 @@ data "aws_route53_zone" "struct8" {
 ### CATEGORY: IAM ###
 
 resource "aws_acm_certificate" "Certificate" {
-  domain_name                       = "cog-auth.cloudman.pro"
+  domain_name                       = "cog-auth.app.struct8.com"
   key_algorithm                     = "RSA_2048"
   validation_method                 = "DNS"
   lifecycle {
@@ -60,7 +60,6 @@ resource "aws_acm_certificate" "Certificate" {
 resource "aws_acm_certificate" "Certificate1" {
   domain_name                       = "app.struct8.com"
   key_algorithm                     = "RSA_2048"
-  subject_alternative_names         = ["v2.cloudman.pro"]
   validation_method                 = "DNS"
   lifecycle {
     create_before_destroy           = true
@@ -96,15 +95,12 @@ resource "aws_acm_certificate" "CloudManV2" {
 
 resource "aws_acm_certificate_validation" "Validation_Certificate" {
   certificate_arn                   = aws_acm_certificate.Certificate.arn
-  validation_record_fqdns           = [for record in aws_route53_record.Route53_Record_Certificate_cog_auth_cloudman_pro : record.fqdn]
+  validation_record_fqdns           = [for record in aws_route53_record.Route53_Record_Certificate_cog_auth_app_struct8_com : record.fqdn]
 }
 
 resource "aws_acm_certificate_validation" "Validation_Certificate1" {
   certificate_arn                   = aws_acm_certificate.Certificate1.arn
-  validation_record_fqdns           = concat(
-    [for record in aws_route53_record.Route53_Record_Certificate1_app_struct8_com : record.fqdn],
-    [for record in aws_route53_record.Route53_Record_Certificate1_v2_cloudman_pro : record.fqdn],
-  )
+  validation_record_fqdns           = [for record in aws_route53_record.Route53_Record_Certificate1_app_struct8_com : record.fqdn]
 }
 
 resource "aws_acm_certificate_validation" "Validation_CloudManV2" {
@@ -130,26 +126,13 @@ resource "aws_route53_record" "Route53_Record_Certificate1_app_struct8_com" {
   type                              = "${each.value.resource_record_type}"
 }
 
-resource "aws_route53_record" "Route53_Record_Certificate1_v2_cloudman_pro" {
-  for_each                          = {
-    for dvo in aws_acm_certificate.Certificate1.domain_validation_options : dvo.domain_name => dvo
-    if dvo.domain_name == "v2.cloudman.pro"
-  }
-  name                              = "${each.value.resource_record_name}"
-  zone_id                           = data.aws_route53_zone.Cloudman.zone_id
-  allow_overwrite                   = true
-  records                           = ["${each.value.resource_record_value}"]
-  ttl                               = 300
-  type                              = "${each.value.resource_record_type}"
-}
-
-resource "aws_route53_record" "Route53_Record_Certificate_cog_auth_cloudman_pro" {
+resource "aws_route53_record" "Route53_Record_Certificate_cog_auth_app_struct8_com" {
   for_each                          = {
     for dvo in aws_acm_certificate.Certificate.domain_validation_options : dvo.domain_name => dvo
-    if dvo.domain_name == "cog-auth.cloudman.pro"
+    if dvo.domain_name == "cog-auth.app.struct8.com"
   }
   name                              = "${each.value.resource_record_name}"
-  zone_id                           = data.aws_route53_zone.Cloudman.zone_id
+  zone_id                           = data.aws_route53_zone.struct8.zone_id
   allow_overwrite                   = true
   records                           = ["${each.value.resource_record_value}"]
   ttl                               = 300
