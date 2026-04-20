@@ -652,7 +652,7 @@ resource "aws_lambda_function" "GetStageV2" {
   timeout                           = 2
   environment {
     variables                       = {
-    "DOMAIN" = "${aws_route53_zone.Cloudman.name}"
+    "DOMAIN" = "${data.aws_route53_zone.struct8.name}"
     "NAME" = "GetStageV2"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
