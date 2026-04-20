@@ -196,6 +196,21 @@ resource "aws_iam_policy" "lambda_function_HCLGCore-dev_st_AppCloudManV2-dev" {
   policy                            = data.aws_iam_policy_document.lambda_function_HCLGCore-dev_st_AppCloudManV2-dev_doc.json
 }
 
+data "aws_iam_policy_document" "lambda_function_HelmK8s-dev_st_AppCloudManV2-dev_doc" {
+  statement {
+    sid                             = "AllowWriteLogs"
+    effect                          = "Allow"
+    actions                         = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources                       = ["${aws_cloudwatch_log_group.HelmK8s-dev.arn}:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_function_HelmK8s-dev_st_AppCloudManV2-dev" {
+  name                              = "lambda_function_HelmK8s-dev_st_AppCloudManV2-dev"
+  description                       = "Access Policy for HelmK8s-dev"
+  policy                            = data.aws_iam_policy_document.lambda_function_HelmK8s-dev_st_AppCloudManV2-dev_doc.json
+}
+
 resource "aws_iam_role" "role_lambda_AgentV2-dev" {
   name                              = "role_lambda_AgentV2-dev"
   assume_role_policy                = jsonencode({
@@ -328,6 +343,28 @@ resource "aws_iam_role" "role_lambda_HCLGCore-dev" {
   }
 }
 
+resource "aws_iam_role" "role_lambda_HelmK8s-dev" {
+  name                              = "role_lambda_HelmK8s-dev"
+  assume_role_policy                = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+})
+  tags                              = {
+    "Name" = "role_lambda_HelmK8s-dev"
+    "State" = "AppCloudManV2-dev"
+    "Struct8User" = "Struc8"
+    "Stage" = "dev"
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_function_AgentV2-dev_st_AppCloudManV2-dev_attach" {
   policy_arn                        = aws_iam_policy.lambda_function_AgentV2-dev_st_AppCloudManV2-dev.arn
   role                              = aws_iam_role.role_lambda_AgentV2-dev.name
@@ -358,15 +395,21 @@ resource "aws_iam_role_policy_attachment" "lambda_function_HCLGCore-dev_st_AppCl
   role                              = aws_iam_role.role_lambda_HCLGCore-dev.name
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_function_HelmK8s-dev_st_AppCloudManV2-dev_attach" {
+  policy_arn                        = aws_iam_policy.lambda_function_HelmK8s-dev_st_AppCloudManV2-dev.arn
+  role                              = aws_iam_role.role_lambda_HelmK8s-dev.name
+}
+
 resource "aws_acm_certificate" "AppCloudManV2-dev" {
   domain_name                       = "dev.app.struct8.com"
   key_algorithm                     = "RSA_2048"
   validation_method                 = "DNS"
+  lifecycle {
+    create_before_destroy           = true
+    prevent_destroy                 = false
+  }
   options {
     certificate_transparency_logging_preference = "ENABLED"
-  }
-  lifecycle {
-    create_before_destroy = true
   }
   tags                              = {
     "Name" = "AppCloudManV2-dev"
@@ -378,7 +421,7 @@ resource "aws_acm_certificate" "AppCloudManV2-dev" {
 
 resource "aws_acm_certificate_validation" "Validation_AppCloudManV2-dev" {
   certificate_arn                   = aws_acm_certificate.AppCloudManV2-dev.arn
-  validation_record_fqdns           = [for record in aws_route53_record.Route53_Record_AppCloudManV2-dev : record.fqdn]
+  validation_record_fqdns           = [for record in aws_route53_record.Route53_Record_AppCloudManV2-dev_dev_app_struct8_com : record.fqdn]
 }
 
 
@@ -386,18 +429,17 @@ resource "aws_acm_certificate_validation" "Validation_AppCloudManV2-dev" {
 
 ### CATEGORY: NETWORK ###
 
-resource "aws_route53_record" "Route53_Record_AppCloudManV2-dev" {
-  for_each                          = {for dvo in aws_acm_certificate.AppCloudManV2-dev.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name,
-      record = dvo.resource_record_value,
-      type   = dvo.resource_record_type
-    }}
-  name                              = "${each.value.name}"
+resource "aws_route53_record" "Route53_Record_AppCloudManV2-dev_dev_app_struct8_com" {
+  for_each                          = {
+    for dvo in aws_acm_certificate.AppCloudManV2-dev.domain_validation_options : dvo.domain_name => dvo
+    if dvo.domain_name == "dev.app.struct8.com"
+  }
+  name                              = "${each.value.resource_record_name}"
   zone_id                           = data.aws_route53_zone.struct8.zone_id
   allow_overwrite                   = true
-  records                           = ["${each.value.record}"]
+  records                           = ["${each.value.resource_record_value}"]
   ttl                               = 300
-  type                              = "${each.value.type}"
+  type                              = "${each.value.resource_record_type}"
 }
 
 resource "aws_route53_record" "alias_a_aws_cloudfront_distribution_AppCloudManV2-dev_dev_app_struct8_com" {
@@ -489,6 +531,19 @@ locals {
     {
       path             = "/HCLGCore-dev"
       uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:HCLGCore-dev/invocations"
+      type             = "aws_proxy"
+      methods          = ["post"]
+      method_auth      = {"post" = "APIAppCloudManV2-dev_CognitoAuth_CloudManV2"}
+      enable_mock      = true
+      credentials      = null
+      requestTemplates = null
+      integ_method     = "POST"
+      parameters       = null
+      integ_req_params = null
+    },
+    {
+      path             = "/HelmK8s-dev"
+      uri              = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${data.aws_caller_identity.current.account_id}:function:HelmK8s-dev/invocations"
       type             = "aws_proxy"
       methods          = ["post"]
       method_auth      = {"post" = "APIAppCloudManV2-dev_CognitoAuth_CloudManV2"}
@@ -840,7 +895,7 @@ resource "aws_lambda_function" "AgentV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "8"
+    "CICD_VERSION" = "9"
     "NAME" = "AgentV2-dev"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
@@ -878,7 +933,7 @@ resource "aws_lambda_function" "DBAccessV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "8"
+    "CICD_VERSION" = "9"
     "NAME" = "DBAccessV2-dev"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
@@ -921,9 +976,9 @@ resource "aws_lambda_function" "GithubGateKeeper-dev" {
   environment {
     variables                       = {
     "CLOUDMAN_CICD_STAGE" = "dev"
-    "APP_URL" = "v2.cloudman.pro"
+    "APP_URL" = "app.struct8.com"
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "8"
+    "CICD_VERSION" = "9"
     "NAME" = "GithubGateKeeper-dev"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
@@ -967,7 +1022,7 @@ resource "aws_lambda_function" "HCLAWSV2-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "8"
+    "CICD_VERSION" = "9"
     "NAME" = "HCLAWSV2-dev"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
@@ -1008,7 +1063,7 @@ resource "aws_lambda_function" "HCLCloudFlare-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "8"
+    "CICD_VERSION" = "9"
     "NAME" = "HCLCloudFlare-dev"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
@@ -1044,7 +1099,7 @@ resource "aws_lambda_function" "HCLGCore-dev" {
   environment {
     variables                       = {
     "CICD_STAGE" = "dev"
-    "CICD_VERSION" = "8"
+    "CICD_VERSION" = "9"
     "NAME" = "HCLGCore-dev"
     "REGION" = "${data.aws_region.current.name}"
     "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
@@ -1057,6 +1112,42 @@ resource "aws_lambda_function" "HCLGCore-dev" {
     "Stage" = "dev"
   }
   depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HCLGCore-dev_st_AppCloudManV2-dev_attach]
+}
+
+data "archive_file" "archive_CloudManMainV2_HelmK8s-dev" {
+  output_path                       = "${path.module}/CloudManMainV2_HelmK8s-dev.zip"
+  source_dir                        = "${path.module}/.external_modules/CloudManMainV2/LambdaFiles/HelmK8s"
+  type                              = "zip"
+}
+
+resource "aws_lambda_function" "HelmK8s-dev" {
+  function_name                     = "HelmK8s-dev"
+  architectures                     = ["arm64"]
+  filename                          = "${data.archive_file.archive_CloudManMainV2_HelmK8s-dev.output_path}"
+  handler                           = "HelmK8s.lambda_handler"
+  memory_size                       = 1024
+  publish                           = false
+  reserved_concurrent_executions    = -1
+  role                              = aws_iam_role.role_lambda_HelmK8s-dev.arn
+  runtime                           = "python3.13"
+  source_code_hash                  = "${data.archive_file.archive_CloudManMainV2_HelmK8s-dev.output_base64sha256}"
+  timeout                           = 3
+  environment {
+    variables                       = {
+    "CICD_STAGE" = "dev"
+    "CICD_VERSION" = "9"
+    "NAME" = "HelmK8s-dev"
+    "REGION" = "${data.aws_region.current.name}"
+    "ACCOUNT" = "${data.aws_caller_identity.current.account_id}"
+  }
+  }
+  tags                              = {
+    "Name" = "HelmK8s-dev"
+    "State" = "AppCloudManV2-dev"
+    "Struct8User" = "Struc8"
+    "Stage" = "dev"
+  }
+  depends_on                        = [aws_iam_role_policy_attachment.lambda_function_HelmK8s-dev_st_AppCloudManV2-dev_attach]
 }
 
 resource "aws_lambda_permission" "perm_APIAppCloudManV2-dev_to_AgentV2-dev_openapi" {
@@ -1105,6 +1196,14 @@ resource "aws_lambda_permission" "perm_APIAppCloudManV2-dev_to_HCLGCore-dev_open
   principal                         = "apigateway.amazonaws.com"
   action                            = "lambda:InvokeFunction"
   source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-dev.execution_arn}/*/POST/HCLGCore-dev"
+}
+
+resource "aws_lambda_permission" "perm_APIAppCloudManV2-dev_to_HelmK8s-dev_openapi" {
+  function_name                     = aws_lambda_function.HelmK8s-dev.function_name
+  statement_id                      = "perm_APIAppCloudManV2-dev_to_HelmK8s-dev_openapi"
+  principal                         = "apigateway.amazonaws.com"
+  action                            = "lambda:InvokeFunction"
+  source_arn                        = "${aws_api_gateway_rest_api.APIAppCloudManV2-dev.execution_arn}/*/POST/HelmK8s-dev"
 }
 
 resource "aws_lambda_permission" "perm_AgentV2-dev_to_GithubGateKeeper-dev" {
@@ -1205,6 +1304,19 @@ resource "aws_cloudwatch_log_group" "HCLGCore-dev" {
   skip_destroy                      = false
   tags                              = {
     "Name" = "HCLGCore-dev"
+    "State" = "AppCloudManV2-dev"
+    "Struct8User" = "Struc8"
+    "Stage" = "dev"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "HelmK8s-dev" {
+  name                              = "/aws/lambda/HelmK8s-dev"
+  log_group_class                   = "STANDARD"
+  retention_in_days                 = 1
+  skip_destroy                      = false
+  tags                              = {
+    "Name" = "HelmK8s-dev"
     "State" = "AppCloudManV2-dev"
     "Struct8User" = "Struc8"
     "Stage" = "dev"
